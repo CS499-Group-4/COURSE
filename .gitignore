@@ -1,0 +1,9 @@
+#Ignore VS Code folders
+.vscode/
+.vs/
+
+#Ignore temporary files
+__pycache__/
+*.DS_Store
+*.sln
+*.pyproj   
