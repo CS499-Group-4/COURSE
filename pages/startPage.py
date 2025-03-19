@@ -116,7 +116,7 @@ class StartPage(tk.Frame):
         
         button_image_9 = scaled_photoimage(str(relative_to_assets("button_9.png")), scale_x, scale_y)
         button_9 = Button(self, image=button_image_9, borderwidth=0, highlightthickness=0,
-                      command=lambda: controller.show_frame(ConflictPage), relief="flat")
+                      command=lambda: controller.show_frame("ConflictPage"), relief="flat")
         button_9.image = button_image_9
         button_9.place(x=972.0 * scale_x, y=741.0 * scale_y, width=200.0 * scale_x, height=61.0 * scale_y)
         

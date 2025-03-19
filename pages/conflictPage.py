@@ -108,7 +108,7 @@ class ConflictPage(tk.Frame):
         )
 
         button_image_4 = scaled_photoimage(str(relative_to_assets("button_4.png")), scale_x, scale_y)
-        button_4 = Button(self, image=button_image_4, command=lambda: controller.show_frame(StartPage), relief="flat")
+        button_4 = Button(self, image=button_image_4, command=lambda: controller.show_frame("StartPage"), relief="flat")
         button_4.image = button_image_4
         button_4.place(x=1163.0 * scale_x, y=587.0 * scale_y, width=201.0 * scale_x, height=83.0 * scale_y)
 
