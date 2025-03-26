@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 import os
 
 #import the generate_scheduler() function from lib/scheduler.py
-from lib.Scheduler import generate_schedule
+from lib.Scheduler import generate_schedule, return_schedule
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -25,12 +25,23 @@ def scaled_photoimage(image_path: str, scale_x: float, scale_y: float) -> ImageT
     img = img.resize(new_size, resample=Image.Resampling.LANCZOS)
     return ImageTk.PhotoImage(img)
 
+tree = None
+
+def update_treeview():
+    global tree
+
+    tree.delete(*tree.get_children())
+    for entry in return_schedule():
+        tree.insert("", "end", values=entry)
+
 
 def runScheduler():
     # Call the generate_schedule() function
     print("Running scheduler...")
     generate_schedule()
-    print("Scheduler complete")
+    print("Scheduler complete, updating treeview...")
+    update_treeview()
+    print("Treeview updated.")
 
 
 # ---------------------------
@@ -148,21 +159,22 @@ class StartPage(tk.Frame):
         canvas.create_rectangle(918.0, 314.0, 1456.02325, 315.0, fill="#094478", outline="")
         
         # Table section
-        columns = ("Course ID", "Course Name", "Time", "Room", "Professor", "Days")
+        columns = ("Course ID", "Day", "Time", "Professor", "Room")
+        global tree #Use global var so it can be updated when the scheduler is run
         tree = ttk.Treeview(self, columns=columns, show="headings")
         for col in columns:
             tree.heading(col, text=col)
             tree.column(col, width=30, anchor="center")
         courses = [
-            ("CS 115", "Intro to Programming", "9:00 AM - 10:30 AM", "Room 341", "Dr. Echo", "Mon, Wed"),
-            ("CS 310", "Data Structures", "10:45 AM - 12:15 PM", "Room 243", "Dr. Juliet", "Tue, Thu"),
-            ("CS 382", "Algorithms", "1:00 PM - 2:30 PM", "Room 341", "Dr. Lima", "Mon, Wed, Fri"),
-            ("CS 419", "Artificial Intelligence", "2:45 PM - 4:15 PM", "Room 134", "Dr. Lima", "Tue, Thu"),
-            ("CS 438", "Machine Learning", "4:30 PM - 6:00 PM", "Room 241", "Dr. November", "Mon, Wed"),
-            ("CS 452", "Computer Security", "6:15 PM - 7:45 PM", "Room 244", "Dr. Foxtrot", "Tue, Thu"),
-            ("CS 501", "Advanced Programming", "8:00 AM - 9:30 AM", "Room 244", "Dr. November", "Mon, Wed"),
-            ("CS 558", "Cryptography", "9:45 AM - 11:15 AM", "Room 244", "Dr. Hotel", "Tue, Thu"),
-            ("CS 572", "Deep Learning", "11:30 AM - 1:00 PM", "Room 244", "Dr. Dog", "Mon, Wed, Fri"),
+            # ("CS 115", "Intro to Programming", "9:00 AM - 10:30 AM", "Room 341", "Dr. Echo", "Mon, Wed"),
+            # ("CS 310", "Data Structures", "10:45 AM - 12:15 PM", "Room 243", "Dr. Juliet", "Tue, Thu"),
+            # ("CS 382", "Algorithms", "1:00 PM - 2:30 PM", "Room 341", "Dr. Lima", "Mon, Wed, Fri"),
+            # ("CS 419", "Artificial Intelligence", "2:45 PM - 4:15 PM", "Room 134", "Dr. Lima", "Tue, Thu"),
+            # ("CS 438", "Machine Learning", "4:30 PM - 6:00 PM", "Room 241", "Dr. November", "Mon, Wed"),
+            # ("CS 452", "Computer Security", "6:15 PM - 7:45 PM", "Room 244", "Dr. Foxtrot", "Tue, Thu"),
+            # ("CS 501", "Advanced Programming", "8:00 AM - 9:30 AM", "Room 244", "Dr. November", "Mon, Wed"),
+            # ("CS 558", "Cryptography", "9:45 AM - 11:15 AM", "Room 244", "Dr. Hotel", "Tue, Thu"),
+            # ("CS 572", "Deep Learning", "11:30 AM - 1:00 PM", "Room 244", "Dr. Dog", "Mon, Wed, Fri"),
         ]
         for course in courses:
             tree.insert("", "end", values=course)

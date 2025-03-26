@@ -123,6 +123,28 @@ class CourseScheduler:
                     print(f"CONFLICT: Room {room.RoomID} is scheduled for {slot.SlotID} more than once")
 
 
+def return_schedule():
+    scheduler = CourseScheduler()
+    schedule = scheduler.session.query(Schedule).all()
+    formatted_schedule = []
+
+    #Convert IDs to actual values for the user
+    for entry in schedule:
+        #get TimeSlot.Days and TimeSlot.StartTime given that entry.TimeSlot is the ID
+        timeslot_days = scheduler.session.query(TimeSlot).filter(TimeSlot.SlotID == entry.TimeSlot)
+        timeslot_days = timeslot_days[0].Days
+        timeslot_starttime = scheduler.session.query(TimeSlot).filter(TimeSlot.SlotID == entry.TimeSlot)
+        timeslot_starttime = timeslot_starttime[0].StartTime
+
+        #get Professor.Name given that entry.Professor is the ID
+        professor_name = scheduler.session.query(Faculty).filter(Faculty.FacultyID == entry.Professor)
+        professor_name = professor_name[0].Name
+
+        formatted_schedule.append([entry.Course, timeslot_days, timeslot_starttime, professor_name, entry.Classroom])
+
+
+    return formatted_schedule
+
 def generate_schedule():
 
     scheduler = CourseScheduler()
