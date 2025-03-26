@@ -4,6 +4,8 @@ from tkinter.filedialog import askopenfilename
 from pathlib import Path
 from PIL import Image, ImageTk
 import os
+from lib.DatabaseManager import DatabaseManager  # Import the DatabaseManager class
+from lib.CSV_Parser import parse_csv  # Import the parse_csv function
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -88,13 +90,46 @@ class UploadPage(tk.Frame):
         
         def upload_file():
             file_path = askopenfilename(
-                title="choose file",
-                filetypes=(("all file", "*.*"), ("text file", "*.txt"), ("Excel file", "*.xlsx"))
+                title="Choose file",
+                filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
             )
             if file_path:
                 selected_name = os.path.basename(file_path)
-                print("choosed file path:", file_path)
+                print("Chosen file path:", file_path)
                 self.canvas.itemconfig(self.selected_file_text_id, text=selected_name)
+
+                try:
+                    # Call the CSV parser with the selected file path
+                    parse_csv(file_path)
+
+                    # Initialize DatabaseManager to query the database
+                    db_manager = DatabaseManager()
+                    db_manager.start_session()
+
+                    # Print data from the database
+                    print("\nData from the database:")
+                    
+                    print("\nFaculty:")
+                    for faculty in db_manager.get_faculty():
+                        print(f"Faculty ID: {faculty.FacultyID}, Name: {faculty.Name}")
+
+                    print("\nClassrooms:")
+                    for classroom in db_manager.get_classrooms():
+                        print(f"RoomID: {classroom.RoomID}, Building: {classroom.Building}")
+
+                    print("\nCourses:")
+                    for course in db_manager.get_course():
+                        print(f"CourseID: {course.CourseID}, ReqRoom: {course.ReqRoom}")
+
+                    print("\nTimeslots:")
+                    for timeslot in db_manager.get_timeslot():
+                        print(f"SlotID: {timeslot.SlotID}, Days: {timeslot.Days}")
+
+                    # End the database session
+                    db_manager.end_session()
+
+                except Exception as e:
+                    print(f"Error parsing CSV or querying database: {e}")
         
         # File upload button: covers a large area, click to trigger upload
         btn6_img = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
