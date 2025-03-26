@@ -5,6 +5,9 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 
+#import the generate_scheduler() function from lib/scheduler.py
+from lib.Scheduler import generate_schedule
+
 # ---------------------------
 # Common helper functions and resource paths
 # ---------------------------
@@ -21,6 +24,14 @@ def scaled_photoimage(image_path: str, scale_x: float, scale_y: float) -> ImageT
     new_size = (int(orig_width * scale_x), int(orig_height * scale_y))
     img = img.resize(new_size, resample=Image.Resampling.LANCZOS)
     return ImageTk.PhotoImage(img)
+
+
+def runScheduler():
+    # Call the generate_schedule() function
+    print("Running scheduler...")
+    generate_schedule()
+    print("Scheduler complete")
+
 
 # ---------------------------
 # StartPage
@@ -85,7 +96,7 @@ class StartPage(tk.Frame):
         # Upper right button
         button_image_6 = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
         button_6 = Button(self, image=button_image_6, borderwidth=0, highlightthickness=0,
-                          command=lambda: print("button_6 clicked"), relief="flat")
+                          command=runScheduler, relief="flat")
         button_6.image = button_image_6
         button_6.place(x=942.0 * scale_x, y=36.0 * scale_y, width=206.0 * scale_x, height=101.0 * scale_y)
         
