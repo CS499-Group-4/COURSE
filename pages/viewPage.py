@@ -70,6 +70,13 @@ class ViewPage(tk.Frame):
         entry_bg_1 = canvas.create_image(1301.0 * scale_x, 40.5 * scale_y, image=entry_image_1)
         entry_1 = Entry(self, bd=0, bg="#FFFFFF", fg="#000716", highlightthickness=0)
         entry_1.place(x=1167.0 * scale_x, y=14.0 * scale_y, width=268.0 * scale_x, height=51.0 * scale_y)
+     
+        #logo iamge
+        img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
+        canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
+        canvas.image = img1
+        
+        
         image_2 = scaled_photoimage(str(relative_to_assets("image_2.png")), scale_x, scale_y)
         canvas.create_image(1116.0 * scale_x, 41.0 * scale_y, image=image_2)
         canvas.create_text(1067.0 * scale_x, 113.0 * scale_y, anchor="nw",
@@ -86,3 +93,14 @@ class ViewPage(tk.Frame):
         button_7.image = button_image_7
         button_7.place(x=1204.0 * scale_x, y=107.0 * scale_y, width=134.0 * scale_x, height=41.0 * scale_y)
         canvas.scale("all", 0, 0, scale_x, scale_y)
+        
+
+ 
+
+
+
+
+
+
+
+
