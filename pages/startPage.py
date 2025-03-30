@@ -164,9 +164,7 @@ class StartPage(tk.Frame):
         btn5.image = btn5_img
         btn5.place(x=0.0 * scale_x, y=1.5 * scale_y, width=235.0 * scale_x, height=100.0 * scale_y)
         
-        # Canvas（Logo）
-        image_1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
-        canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=image_1)
+
         
         canvas.create_rectangle(918.0, 1.0, 1458.0, 1042.0, fill="#DAEBF9", outline="")
         
@@ -181,7 +179,7 @@ class StartPage(tk.Frame):
 
 
 
-        # deleted CANCLE bottom
+        #  CANCLE bottom
         # button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
         # button_7 = Button(self, image=button_image_7, borderwidth=0, highlightthickness=0,
         #                   command=lambda: print("button_7 clicked"), relief="flat")
@@ -281,5 +279,10 @@ class StartPage(tk.Frame):
         
         make_treeview_editable()
         
+
+
+
+
+
         canvas.scale("all", 0, 0, scale_x, scale_y)
         make_treeview_editable()
