@@ -183,5 +183,13 @@ class SettingPage(tk.Frame):
         button_17.image = button_image_17
         button_17.place(x=979.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
         
+
+        #logo iamge
+        img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
+        canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
+        canvas.image = img1
+
+
+
         # 对所有 Canvas 项目进行统一缩放
         canvas.scale("all", 0, 0, scale_x, scale_y)
