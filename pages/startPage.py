@@ -98,9 +98,7 @@ class StartPage(tk.Frame):
         btn5.image = btn5_img
         btn5.place(x=0.0 * scale_x, y=1.5 * scale_y, width=235.0 * scale_x, height=100.0 * scale_y)
         
-        # Canvas（Logo）
-        image_1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
-        canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=image_1)
+
         
         canvas.create_rectangle(918.0, 1.0, 1458.0, 1042.0, fill="#DAEBF9", outline="")
         
@@ -109,13 +107,18 @@ class StartPage(tk.Frame):
         button_6 = Button(self, image=button_image_6, borderwidth=0, highlightthickness=0,
                           command=runScheduler, relief="flat")
         button_6.image = button_image_6
-        button_6.place(x=942.0 * scale_x, y=36.0 * scale_y, width=206.0 * scale_x, height=101.0 * scale_y)
+        button_6.place(x=1100.0 * scale_x, y=36.0 * scale_y, width=206.0 * scale_x, height=101.0 * scale_y)
         
-        button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
-        button_7 = Button(self, image=button_image_7, borderwidth=0, highlightthickness=0,
-                          command=lambda: print("button_7 clicked"), relief="flat")
-        button_7.image = button_image_7
-        button_7.place(x=1224.0 * scale_x, y=36.0 * scale_y, width=200.0 * scale_x, height=112.0 * scale_y)
+
+
+
+
+        #  CANCLE bottom
+        # button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
+        # button_7 = Button(self, image=button_image_7, borderwidth=0, highlightthickness=0,
+        #                   command=lambda: print("button_7 clicked"), relief="flat")
+        # button_7.image = button_image_7
+        # button_7.place(x=1224.0 * scale_x, y=36.0 * scale_y, width=200.0 * scale_x, height=112.0 * scale_y)
         
        # Status and conflict summary text
         canvas.create_text(2000.0 * scale_x, 270.0 * scale_y, anchor="nw",
@@ -125,6 +128,23 @@ class StartPage(tk.Frame):
         canvas.create_text(1064.0, 339.0, anchor="nw",
                            text="Conflict  Summary：", fill="#094478",
                            font=("Jomolhari Regular", int(20 * -1)))
+        
+
+        #conflict_tree section
+        conflict_columns = ("Course 1", "Course 2", "Conflict Type")
+        global conflict_tree
+        conflict_tree = ttk.Treeview(self, columns=conflict_columns, show="headings")
+        for col in conflict_columns:
+            conflict_tree.heading(col, text=col)
+            conflict_tree.column(col, width=20, anchor="center")
+        canvas.create_window(950.0, 380.0, anchor="nw", width=450.0, height=350.0, window=conflict_tree)
+        conflict_scroll = ttk.Scrollbar(self, orient="vertical", command=conflict_tree.yview)
+        conflict_tree.configure(yscrollcommand=conflict_scroll.set)
+        conflict_scroll.place(x=1400.0 * scale_x, y=365.0 * scale_y, height=400.0 * scale_y)        
+
+
+
+
         canvas.create_text(1800.0 * scale_x, 350.0 * scale_y, anchor="nw",
                            text="status info", fill="#000000",
                            font=("Jomolhari Regular", int(15 * scale_y)))
@@ -154,6 +174,14 @@ class StartPage(tk.Frame):
         button_11.image = button_image_11
         button_11.place(x=1224.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
         
+        #logo iamge
+        img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
+        canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
+        canvas.image = img1
+
+
+
+
         # Divider
         canvas.create_rectangle(916.98816, 153.4765, 1455.01141, 154.4765, fill="#094478", outline="")
         canvas.create_rectangle(918.0, 314.0, 1456.02325, 315.0, fill="#094478", outline="")
@@ -183,4 +211,9 @@ class StartPage(tk.Frame):
         canvas.create_window(240, 9, width=671, height=1026, anchor="nw", window=tree)
         tree_scroll.place(x=500, y=6, height=1025)
         
+
+
+
+
+
         canvas.scale("all", 0, 0, scale_x, scale_y)
