@@ -10,6 +10,8 @@ class CourseScheduler:
         self.db.start_session()
         self.session = self.db.session
 
+        
+
     def get_sorted_courses(self, session):
     # Get all courses, sorted:
     #  1. Courses whose associated faculty member has a Preference come first.
@@ -122,6 +124,14 @@ class CourseScheduler:
                 if self.session.query(Schedule).filter(and_(Schedule.Classroom == room.RoomID, Schedule.TimeSlot == slot.SlotID)).count() > 1:
                     print(f"CONFLICT: Room {room.RoomID} is scheduled for {slot.SlotID} more than once")
 
+
+def isScheduleEmpty():
+    scheduler = CourseScheduler()
+    #Check if schedule table is empty
+    if scheduler.session.query(Schedule).count() == 0:
+        return True
+    else:
+        return False
 
 def return_schedule():
     scheduler = CourseScheduler()
