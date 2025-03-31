@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 import os
 
 #import the generate_scheduler() function from lib/scheduler.py
-from lib.Scheduler import generate_schedule, return_schedule
+from lib.Scheduler import generate_schedule, return_schedule, isScheduleEmpty
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -38,7 +38,10 @@ def update_treeview():
 def runScheduler():
     # Call the generate_schedule() function
     print("Running scheduler...")
-    generate_schedule()
+    if isScheduleEmpty():
+        generate_schedule()
+    else:
+        pass
     print("Scheduler complete, updating treeview...")
     update_treeview()
     print("Treeview updated.")
