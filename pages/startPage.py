@@ -215,18 +215,28 @@ class StartPage(tk.Frame):
                            text="status info", fill="#000000",
                            font=("Jomolhari Regular", int(15 * scale_y)))
         
-        # Lower right button
+        # # Lower right button
+        # button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), scale_x, scale_y)
+        # button_8 = Button(self, image=button_image_8, borderwidth=0, highlightthickness=0,
+        #                   command=lambda: print("button_8 clicked"), relief="flat")
+        # button_8.image = button_image_8
+        # button_8.place(x=1206.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
+        
+        
         button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), scale_x, scale_y)
         button_8 = Button(self, image=button_image_8, borderwidth=0, highlightthickness=0,
                           command=lambda: print("button_8 clicked"), relief="flat")
         button_8.image = button_image_8
-        button_8.place(x=1206.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
-        
-        button_image_9 = scaled_photoimage(str(relative_to_assets("button_9.png")), scale_x, scale_y)
-        button_9 = Button(self, image=button_image_9, borderwidth=0, highlightthickness=0,
-                      command=lambda: controller.show_frame("ConflictPage"), relief="flat")
-        button_9.image = button_image_9
-        button_9.place(x=972.0 * scale_x, y=741.0 * scale_y, width=200.0 * scale_x, height=61.0 * scale_y)
+        button_8.place(x=1090.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
+
+
+
+#******************************************view conflict************************************************
+        # button_image_9 = scaled_photoimage(str(relative_to_assets("button_9.png")), scale_x, scale_y)
+        # button_9 = Button(self, image=button_image_9, borderwidth=0, highlightthickness=0,
+        #               command=lambda: controller.show_frame("ConflictPage"), relief="flat")
+        # button_9.image = button_image_9
+        # button_9.place(x=972.0 * scale_x, y=741.0 * scale_y, width=200.0 * scale_x, height=61.0 * scale_y)
         
         button_image_10 = scaled_photoimage(str(relative_to_assets("button_10.png")), scale_x, scale_y)
         button_10 = Button(self, image=button_image_10, borderwidth=0, highlightthickness=0,
