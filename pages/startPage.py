@@ -300,6 +300,8 @@ class StartPage(tk.Frame):
 
 
 
+        
+        make_treeview_editable()
 
         canvas.scale("all", 0, 0, scale_x, scale_y)
         make_treeview_editable()
