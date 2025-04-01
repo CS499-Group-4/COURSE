@@ -47,6 +47,69 @@ def runScheduler():
     print("Treeview updated.")
 
 
+def make_treeview_editable():
+    def on_double_click(event):
+        # Get the selected item and column
+        region = tree.identify("region", event.x, event.y)
+        if region != "cell":
+            return  # Only allow editing cells
+        row_id = tree.identify_row(event.y)
+        column_id = tree.identify_column(event.x)
+
+        # Get the current value of the cell
+        item = tree.item(row_id)
+        column_index = int(column_id[1:]) - 1  # Convert column ID (e.g., "#1") to index
+        current_value = item["values"][column_index]
+
+        # Get the column name
+        column_name = tree["columns"][column_index]
+
+        # Create a Combobox for editing
+        combobox = ttk.Combobox(tree, state="readonly")
+        combobox.place(x=event.x, y=event.y, width=tree.column(column_name, "width"))
+
+        # Ensure the Combobox is on top of other elements
+        combobox.lift()
+
+        # Populate the Combobox with options dynamically based on the column
+        column_values = set(tree.set(child, column_name) for child in tree.get_children())
+        combobox["values"] = sorted(column_values)
+
+        # Set the current value in the Combobox
+        combobox.set(current_value)
+
+        # Handle selection
+        def on_select(event):
+            new_value = combobox.get()
+            tree.set(row_id, column_name, new_value)  # Update the Treeview
+            combobox.destroy()  # Remove the Combobox
+
+        combobox.bind("<<ComboboxSelected>>", on_select)
+
+        # Close the Combobox when clicking outside of it
+        def close_combobox(event):
+            # Check if the click is outside the Combobox
+            if combobox.winfo_exists():
+                widget_under_cursor = combobox.winfo_containing(event.x_root, event.y_root)
+                if widget_under_cursor is None or widget_under_cursor != combobox:
+                    # Set the current value of the Combobox to the Treeview
+                    new_value = combobox.get()
+                    tree.set(row_id, column_name, new_value)
+                    combobox.destroy()
+
+        # Bind the click event to the root window
+        tree.winfo_toplevel().bind("<Button-1>", close_combobox, add="+")
+
+        # Unbind the click event when the Combobox is destroyed
+        def on_destroy(event):
+            tree.winfo_toplevel().unbind("<Button-1>", close_combobox)
+
+        combobox.bind("<Destroy>", on_destroy)
+
+    # Bind the double-click event to the Treeview
+    tree.bind("<Double-1>", on_double_click)
+
+
 # ---------------------------
 # StartPage
 # ---------------------------
@@ -186,4 +249,7 @@ class StartPage(tk.Frame):
         canvas.create_window(240, 9, width=671, height=1026, anchor="nw", window=tree)
         tree_scroll.place(x=500, y=6, height=1025)
         
+        make_treeview_editable()
+        
         canvas.scale("all", 0, 0, scale_x, scale_y)
+        make_treeview_editable()
