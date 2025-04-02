@@ -4,6 +4,11 @@ from tkinter.filedialog import askopenfilename
 from pathlib import Path
 from PIL import Image, ImageTk
 import os
+<<<<<<< Updated upstream
+=======
+import tkinter.ttk as ttk
+from TkToolTip import ToolTip
+>>>>>>> Stashed changes
 
 #import the generate_scheduler() function from lib/scheduler.py
 from lib.Scheduler import generate_schedule, return_schedule
