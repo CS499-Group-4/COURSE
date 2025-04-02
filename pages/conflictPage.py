@@ -23,7 +23,7 @@ def scaled_photoimage(image_path: str, scale_x: float, scale_y: float) -> ImageT
     return ImageTk.PhotoImage(img)
 
 # ---------------------------
-# Conflict Page
+# Conflict Page: Frame 3
 # ---------------------------
 class ConflictPage(tk.Frame):
     def __init__(self, parent, controller):
