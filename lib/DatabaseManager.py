@@ -63,7 +63,7 @@ class Schedule(Base):
     Classroom = Column(Integer, ForeignKey('classroom.RoomID'),nullable=True)
 
 class DatabaseManager:
-    def __init__(self, database_url="sqlite:///test.db"):
+    def __init__(self, database_url="sqlite:///Course.db"):
         self.engine = create_engine(database_url)
         Base.metadata.create_all(self.engine)
         # self.session = sessionmaker(bind=self.engine) #create session
