@@ -90,12 +90,12 @@ class HomePage(tk.Frame):
             "the automated scheduling of university courses by the dean of a given department\n"
             "from imported data.\n\n"
             "User Instruction：\n"
-            "1. Go to the `Input Data` module to enter course, faculty, and classroom details.\n"
-            "2. Select `Generate Schedule` from the main dashboard to create the course schedule.\n"
-            "3. View the generated schedule in `View Schedule` for a detailed overview.\n"
-            "4. Use the `Conflict Resolution` module to address any detected issues.\n"
-            "5. Generate reports in the `Reports` module for printing or sharing.\n"
-            "6. Adjust system settings in the `Settings` module if needed.\n\n"
+            "1. Go to the `Upload` tab to upload the .csv files\n"
+            "2. Select `Generate Schedule` from the tabs to create the course schedule\n"
+            "3. Conflicts can be reviewed under 'Conflict Summary'\n"
+            "4. View the generated schedule in `View Schedule` for a detailed overview\n"
+            "5. Click 'Export' in 'View Schedule' to save schedule as a .csv\n"
+            "6. Adjust system settings in the `Settings` tab if needed.\n\n"
             "For additional help, click the `Help` button in the navigation bar."
         )
         canvas.create_text(366.4585 * scale_x, 234.97 * scale_y,
