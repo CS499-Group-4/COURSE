@@ -295,13 +295,5 @@ class StartPage(tk.Frame):
         tree_scroll.place(x=500, y=6, height=1025)
         
         make_treeview_editable()
-        
-
-
-
-
-        
-        make_treeview_editable()
-
+      
         canvas.scale("all", 0, 0, scale_x, scale_y)
-        make_treeview_editable()
