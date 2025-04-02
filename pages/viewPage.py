@@ -4,11 +4,10 @@ from tkinter.filedialog import askopenfilename
 from pathlib import Path
 from PIL import Image, ImageTk
 import os
-<<<<<<< Updated upstream
-=======
+
 import tkinter.ttk as ttk
 from TkToolTip import ToolTip
->>>>>>> Stashed changes
+
 
 # ---------------------------
 # Common helper functions and resource paths
