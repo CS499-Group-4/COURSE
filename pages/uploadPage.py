@@ -1,9 +1,11 @@
 ﻿import tkinter as tk
 from tkinter import Canvas, Button, Entry, Label, ttk
-from tkinter.filedialog import askopenfilenames
+from tkinter.filedialog import askopenfilename
 from pathlib import Path
 from PIL import Image, ImageTk
 import os
+from lib.DatabaseManager import DatabaseManager  # Import the DatabaseManager class
+from lib.CSV_Parser import parse_csv  # Import the parse_csv function
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -41,8 +43,6 @@ class UploadPage(tk.Frame):
         new_height = 600
         scale_x = new_width / orig_width
         scale_y = new_height / orig_height
-        self.scaleY = scale_y
-        self.scaleX = scale_x
 
         self.canvas = Canvas(self, bg="#FFFFFF", height=orig_height, width=orig_width,
                              bd=0, highlightthickness=0, relief="ridge")
@@ -86,13 +86,67 @@ class UploadPage(tk.Frame):
         btn5.image = btn5_img
         btn5.place(x=0.0 * scale_x, y=1.5 * scale_y, width=235.0 * scale_x, height=100.0 * scale_y)
         
-       # File upload button: covers a large area, click to trigger upload
+       # File upload part: display the selected file name
+        self.selected_file_text_id = self.canvas.create_text(
+            481.0 * scale_x, 299.0 * scale_y,
+            anchor="nw", text="File name", fill="#094478",
+            font=("Roboto Black", int(20 * scale_y))
+        )
+        
+        def upload_file():
+            file_path = askopenfilename(
+                title="Choose file",
+                filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
+            )
+            if file_path:
+                selected_name = os.path.basename(file_path)
+                print("Chosen file path:", file_path)
+                self.canvas.itemconfig(self.selected_file_text_id, text=selected_name)
+
+                try:
+                    # Call the CSV parser with the selected file path
+                    parse_csv(file_path)
+
+                    # Initialize DatabaseManager to query the database
+                    db_manager = DatabaseManager()
+                    db_manager.start_session()
+
+                    # Print data from the database
+                    print("\nData from the database:")
+                    
+                    print("\nFaculty:")
+                    for faculty in db_manager.get_faculty():
+                        print(f"Faculty ID: {faculty.FacultyID}, Name: {faculty.Name}")
+
+                    print("\nClassrooms:")
+                    for classroom in db_manager.get_classrooms():
+                        print(f"RoomID: {classroom.RoomID}, Building: {classroom.Building}")
+
+                    print("\nCourses:")
+                    for course in db_manager.get_course():
+                        print(f"CourseID: {course.CourseID}, ReqRoom: {course.ReqRoom}")
+
+                    print("\nTimeslots:")
+                    for timeslot in db_manager.get_timeslot():
+                        print(f"SlotID: {timeslot.SlotID}, Days: {timeslot.Days}")
+
+                    # End the database session
+                    db_manager.end_session()
+
+                except Exception as e:
+                    print(f"Error parsing CSV or querying database: {e}")
+        
+        # File upload button: covers a large area, click to trigger upload
         btn6_img = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
         btn6 = Button(self, image=btn6_img, borderwidth=0, highlightthickness=0,
-                      command=self.upload_file, relief="flat")
+                      command=upload_file, relief="flat")
         btn6.image = btn6_img
         btn6.place(x=250.0 * scale_x, y=25.0 * scale_y, width=1177.0 * scale_x, height=211.0 * scale_y)
-
+        
+        self.canvas.create_text(481.0 * scale_x, 452.0 * scale_y, anchor="nw",
+                           text="File name", fill="#094478", font=("Roboto Black", int(20 * scale_y)))
+        self.canvas.create_text(482.0 * scale_x, 615.0 * scale_y, anchor="nw",
+                           text="File name", fill="#094478", font=("Roboto Black", int(20 * scale_y)))
         #logo img
         img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
         self.canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
@@ -112,52 +166,4 @@ class UploadPage(tk.Frame):
         self.canvas.create_image(1239.0 * scale_x, 317.0 * scale_y, image=img5)
         
         self.canvas.scale("all", 0, 0, scale_x, scale_y)
-        
 
-    def upload_file(self):
-        file_path = askopenfilenames(
-            title="Choose Files",
-            filetypes=(("All files", "*.*"), ("Text files", "*.txt"), ("Excel files", "*.xlsx"))
-        )
-        if file_path:
-            selected_names = [os.path.basename(path) for path in file_path]
-            print("choosed file path:", file_path)
-            # File upload part: display the selected file name
-            #self.file_listBox.delete(0, tk.END)
-            if not hasattr(self, "images"):
-                self.images = []
-
-            self.text_y_position = 299.0 * self.scaleY
-
-            for name, path in zip(selected_names, file_path):
-                try:
-                    with open(path, "r"):
-                        color = "green"
-                        imgS = scaled_photoimage(str(relative_to_assets("image_2.png")), self.scaleX, self.scaleY)
-                        self.images.append(imgS)
-                        self.canvas.create_image(310.0 * self.scaleX, self.text_y_position, anchor="nw", image=imgS)
-                              
-                except Exception as e:
-                    color = "red"
-                    imgF = scaled_photoimage(str(relative_to_assets("image_4.png")), self.scaleX, self.scaleY)
-                    self.images.append(imgF)
-                    self.canvas.create_image(310.0 * self.scaleX, self.text_y_position, anchor="nw", image=imgS)
-                
-                self.canvas.create_text(
-                    400.0 * self.scaleX, self.text_y_position + 15,  # X and Y position (using scale factors)
-                    anchor="nw", 
-                    text=name, 
-                    fill=color,
-                    font=("Roboto Black", int(25 * self.scaleY), "bold")  # Adjust font size using scale_y
-                )
-                
-                imgD = scaled_photoimage(str(relative_to_assets("image_5.png")), self.scaleX, self.scaleY)
-                self.images.append(imgD)
-                self.canvas.create_image(1239.0 * self.scaleX, self.text_y_position, anchor="nw", image=imgD)
-                              
-                #btnD.place(x=1239.0 * self.scaleX, y=self.text_y_position, width=80.0 * self.scaleX, height=80.0 * self.scaleY)
-                
-                self.text_y_position += 80  # Increase Y position for next file name (spacing)'
-                
-
-            #self.canvas.itemconfig(self.selected_file_text_id, text=selected_name)
