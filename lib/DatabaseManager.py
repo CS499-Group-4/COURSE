@@ -8,28 +8,48 @@ from sqlalchemy.exc import IntegrityError
 
 Base = declarative_base()
 
+
+class Preference(Base):
+    __tablename__ = 'preference'
+    PreferenceID = Column(Integer, primary_key=True, autoincrement=True, unique=True)
+    FacultyID = Column(Integer, ForeignKey('faculty.FacultyID'), nullable=False)
+    PreferenceType = Column(String, nullable=False)  # 'Room', 'Day', 'Time')
+    PreferenceValue = Column(String, nullable=False)  # e.g., RoomID or FacultyID
+
 # Faculty table
 class Faculty(Base):
     __tablename__ = 'faculty'
     FacultyID = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     Name = Column(String, nullable=False, unique=True)
-    Class1 = Column(String, ForeignKey('course.CourseID'),nullable=True)
-    Class2 = Column(String, ForeignKey('course.CourseID'), nullable=True)
-    Class3 = Column(String, ForeignKey('course.CourseID'), nullable=True)
-    Preference = Column(String, nullable=True)
+    Priority = Column(Integer, nullable=True, default=None)  # Default priority
+    Class1 = Column(String, nullable=True)
+    Class2 = Column(String, nullable=True)
+    Class3 = Column(String, nullable=True)
+    Class4 = Column(String, nullable=True)
+    Class5 = Column(String, nullable=True)
+    #All preferences are stored in the preference table
+
 
 # Classroom table
 class Classroom(Base):
     __tablename__ = 'classroom'
     RoomID = Column(String, primary_key=True, unique=True)
+    Department = Column(String, nullable=False)  # e.g., CS, ECE
     Building = Column(String, nullable=False)
     Room = Column(String, nullable=False)
+    Capacity = Column(Integer, nullable=False)
 
 # Course table
 class Course(Base):
     __tablename__ = 'course'
     CourseID = Column(String, primary_key=True, unique=True)
-    ReqRoom = Column(Integer, nullable=True)
+    Department = Column(String, nullable=False)  # e.g., CS, ECE
+    MaxEnrollment = Column(Integer, nullable=False)
+    ReqRoom1 = Column(Integer, nullable=True)
+    ReqRoom2 = Column(Integer, nullable=True)
+    ReqRoom3 = Column(Integer, nullable=True)
+    ReqRoom4 = Column(Integer, nullable=True)
+    ReqRoom5 = Column(Integer, nullable=True)
     # ReqRoom = Column(Integer, ForeignKey('classroom.RoomID'), nullable=True)  # Uncomment for foreign key
 
 # TimeSlot table
@@ -38,6 +58,7 @@ class TimeSlot(Base):
     SlotID = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     Days = Column(String, nullable=False)  # MW/TR
     StartTime = Column(String, nullable=False)
+    EndTime = Column(String, nullable=False)
 
 # Conflict table
 class ScheduleConflict(Base):
@@ -94,23 +115,62 @@ class DatabaseManager:
 
 
     # Functions for adding entries to the database
-    def add_faculty(self, name, class1, class2, class3, preference=None):
-        faculty = Faculty(Name=name, Class1=class1, Class2=class2, Class3=class3, Preference=preference)
+    def add_faculty(self, name, priority, class1=None, class2=None, class3=None, class4=None, class5=None):
+        faculty = Faculty(Name=name, Priority=priority, Class1=class1, Class2=class2, Class3=class3, Class4=class4, Class5=class5)
         self.session.add(faculty)
         self.safe_commit()
 
-    def add_classroom(self, room_id, building, room):
-        classroom = Classroom(RoomID=room_id, Building=building, Room=room)
+    # Add preferences to the database
+    def add_preference(self, faculty_name, preference_type, preference_value):
+        #return the facultyID from entry where name = faculty_name
+        facultyID = self.session.query(Faculty).filter_by(Name=faculty_name).first()
+        if facultyID is None:
+            print(f"[WARN] Faculty {faculty_name} not found when trying to add preference.")
+            return
+        facultyID = facultyID.FacultyID
+        if preference_type not in ['Room', 'Day', 'Time']:
+            print(f"[WARN] Invalid preference type: {preference_type}. Must be 'Room', 'Day', or 'Time'.")
+            return
+        
+        if preference_type == 'Room':
+            preferenceValue = preference_value
+        elif preference_type == 'Day':
+            # query db all unique "days" values in the timeslot table
+            days = self.session.query(TimeSlot.Days).distinct().all()
+            # convert to list of strings
+            days = [day[0] for day in days]
+            if preference_value not in days:
+                print(f"[WARN] Invalid day preference: {preference_value}. Must be one of {days}.")
+                return
+            preferenceValue = preference_value
+        elif preference_type == 'Time':
+            if preference_value not in ['Morning', 'Afternoon', 'Evening']:
+                print(f"[WARN] Invalid time preference: {preference_value}. Must be 'Morning', 'Afternoon', or 'Evening'.")
+                return
+            preferenceValue = preference_value
+
+        preference = Preference(FacultyID=facultyID, PreferenceType=preference_type, PreferenceValue=preferenceValue)
+        self.session.add(preference)
+        self.safe_commit()
+        
+
+    def add_classroom(self, room_id, department, building, room, capacity):
+        classroom = Classroom(RoomID=room_id, Department=department, Building=building, Room=room, Capacity=capacity)
         self.session.add(classroom)
         self.safe_commit()
 
-    def add_course(self, course_id, req_room=None):
-        course = Course(CourseID=course_id, ReqRoom=req_room)
+    def add_course(self, course_id, department, max_enrollment, req_room1=None, req_room2=None, req_room3=None, req_room4=None, req_room5=None):
+        course = Course(CourseID=course_id, Department=department, MaxEnrollment=max_enrollment, ReqRoom1=req_room1, ReqRoom2=req_room2, ReqRoom3=req_room3, ReqRoom4=req_room4, ReqRoom5=req_room5)
         self.session.add(course)
         self.safe_commit()
 
-    def add_timeslot(self, days, start_time):
-        timeslot = TimeSlot(Days=days, StartTime=start_time)
+    def add_timeslot(self, days, start_time, end_time):
+        timeslot = TimeSlot(Days=days, StartTime=start_time, EndTime=end_time)
+        # Check if the timeslot already exists
+        existing_timeslot = self.session.query(TimeSlot).filter_by(Days=days, StartTime=start_time, EndTime=end_time).first()
+        if existing_timeslot:
+            print(f"[WARN] Timeslot {days} {start_time} - {end_time} already exists.")
+            return
         self.session.add(timeslot)
         self.safe_commit()
 
