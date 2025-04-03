@@ -4,7 +4,7 @@ from tkinter.filedialog import askopenfilename
 from pathlib import Path
 from PIL import Image, ImageTk
 import os
-from lib.DatabaseManager import DatabaseManager  # Import the DatabaseManager class
+from lib.DatabaseManager import DatabaseManager, Preference  # Import the DatabaseManager and Preference classes
 from lib.CSV_Parser import parse_csv  # Import the parse_csv function
 
 # ---------------------------
@@ -104,7 +104,7 @@ class UploadPage(tk.Frame):
                 self.canvas.itemconfig(self.selected_file_text_id, text=selected_name)
 
                 try:
-                    # Call the CSV parser with the selected file path
+                    # Parse the CSV file and populate the database
                     parse_csv(file_path)
 
                     # Initialize DatabaseManager to query the database
@@ -113,22 +113,48 @@ class UploadPage(tk.Frame):
 
                     # Print data from the database
                     print("\nData from the database:")
-                    
+
                     print("\nFaculty:")
                     for faculty in db_manager.get_faculty():
-                        print(f"Faculty ID: {faculty.FacultyID}, Name: {faculty.Name}")
+                        # Query preferences for the current faculty
+                        preferences = db_manager.session.query(Preference).filter_by(FacultyID=faculty.FacultyID).all()
+                        preference_details = {
+                            "Room": [],
+                            "Day": [],
+                            "Time": []
+                        }
+                        for pref in preferences:
+                            preference_details[pref.PreferenceType].append(pref.PreferenceValue)
+
+                        print(f"Faculty ID: {faculty.FacultyID}, Name: {faculty.Name}, Priority: {faculty.Priority}, "
+                              f"Classes: {faculty.Class1}, {faculty.Class2}, {faculty.Class3}, {faculty.Class4}, {faculty.Class5}")
+                        print(f"  Preferences:")
+                        print(f"    Rooms: {', '.join(preference_details['Room'])}")
+                        print(f"    Days: {', '.join(preference_details['Day'])}")
+                        print(f"    Times: {', '.join(preference_details['Time'])}")
 
                     print("\nClassrooms:")
                     for classroom in db_manager.get_classrooms():
-                        print(f"RoomID: {classroom.RoomID}, Building: {classroom.Building}")
+                        print(f"RoomID: {classroom.RoomID}, Department: {classroom.Department}, "
+                              f"Building: {classroom.Building}, Capacity: {classroom.Capacity}")
 
                     print("\nCourses:")
                     for course in db_manager.get_course():
-                        print(f"CourseID: {course.CourseID}, ReqRoom: {course.ReqRoom}")
+                        required_rooms = [
+                            course.ReqRoom1,
+                            course.ReqRoom2,
+                            course.ReqRoom3,
+                            course.ReqRoom4,
+                            course.ReqRoom5
+                        ]
+                        # Filter out None values from the required rooms
+                        required_rooms = [room for room in required_rooms if room is not None]
+                        print(f"CourseID: {course.CourseID}, Department: {course.Department}, "
+                              f"MaxEnrollment: {course.MaxEnrollment}, Required Rooms: {', '.join(required_rooms)}")
 
                     print("\nTimeslots:")
                     for timeslot in db_manager.get_timeslot():
-                        print(f"SlotID: {timeslot.SlotID}, Days: {timeslot.Days}")
+                        print(f"SlotID: {timeslot.SlotID}, Days: {timeslot.Days}, StartTime: {timeslot.StartTime}, EndTime: {timeslot.EndTime}")
 
                     # End the database session
                     db_manager.end_session()

@@ -3,221 +3,243 @@
 # CS 499-01
 
 import csv
-import re
 from lib.DatabaseManager import DatabaseManager, Course
 
 class Faculty:
-    def __init__(self, faculty_id, name, classes, preference):
-        # Assign faculty details with support for fewer than 3 classes, assigning an id to faculty as they are parsed in
+    def __init__(self, faculty_id, name, courses, preference):
+        # Assign faculty details with support for multiple courses, days, times, and classrooms
         self.FacultyID = faculty_id
         self.Name = name
-        self.Class1 = classes[0] if len(classes) > 0 else None
-        self.Class2 = classes[1] if len(classes) > 1 else None
-        self.Class3 = classes[2] if len(classes) > 2 else None
-        self.Preference = preference
+        self.Courses = courses  # List of courses taught by the faculty
+        self.Preference = {
+            "priority": preference.get("priority", 0),  # Relative priority
+            "days": preference.get("days", []),  # List of preferred days
+            "times": preference.get("times", []),  # List of preferred times
+            "classrooms": preference.get("classrooms", [])  # List of preferred classrooms
+        }
 
     def print_details(self):
         # Display all faculty information
         print(f"Faculty ID: {self.FacultyID}")
         print(f"Name: {self.Name}")
-        print(f"Classes: {self.Class1}, {self.Class2}, {self.Class3}")
-        print(f"Preference: {self.Preference}")
+        print(f"Courses: {', '.join(self.Courses)}")
+        print(f"Preference:")
+        print(f"  Priority: {self.Preference['priority']}")
+        print(f"  Days: {', '.join(self.Preference['days'])}")
+        print(f"  Times: {', '.join(self.Preference['times'])}")
+        print(f"  Classrooms: {', '.join(self.Preference['classrooms'])}")
         print("---")
 
 
 def parse_csv(file_path):
     # Initialize data storage containers
     faculty_list = []
-    classroom_preferences = {}
-    courses_offered = []
+    classroom_data = []
+    course_data = []
+    timeslot_data = []
 
     # Initialize DatabaseManager
     db_manager = DatabaseManager()
     db_manager.start_session()
 
-    # Read entire file as text lines
+    # Read the CSV file
     with open(file_path, 'r') as csvfile:
-        content = csvfile.read().splitlines()
+        reader = csv.reader(csvfile)
+        rows = list(reader)
 
-    # Extract department and location information
-    department = content[0].split(': ')[1].strip()
-    location = content[1].split(': ')[1].strip()
+    # Parse timeslot data first
+    timeslot_start = next(i for i, row in enumerate(rows) if row[0] == "Options for Days to teach")
+    days = [d for d in rows[timeslot_start][1:] if d]  # Extract days from the header row
+    start_times = [t for t in rows[timeslot_start + 1][1:] if t]  # Extract start times
+    end_times = [t for t in rows[timeslot_start + 2][1:] if t]  # Extract end times
 
-    # Parse courses using regex to extract precise course codes
-    courses_section = content[content.index('Courses Offered') + 1:]
-    course_pattern = r'CS \d{3}'  # Matches course codes like CS 499 or ECE 101
-    for line in courses_section:
-        if 'Classroom Preferences:' in line:
-            break
-        courses = re.findall(course_pattern, line)
-        courses_offered.extend(courses)
+    # Create timeslots for every combination of day, start time, and end time
+    for day in days:
+        for start_time, end_time in zip(start_times, end_times):
+            timeslot_data.append({
+                "day": day,
+                "start_time": start_time,
+                "end_time": end_time
+            })
 
-    # Extract classroom preferences if available
-    pref_start = content.index('Classroom Preferences:')
-    if pref_start < len(content) - 1:
-        pref_lines = content[pref_start + 1:]
-        for pref_line in pref_lines:
-            if 'must be taught in' in pref_line:
-                course, room_info = pref_line.split(' must be taught in ')
-                room_parts = room_info.split(', ')
-                building = room_parts[0].strip()
-                room = room_parts[1].strip()
-                classroom_preferences[course.strip()] = (building, room)
+            # Add timeslot to the database
+            db_manager.add_timeslot(day, start_time, end_time)
 
-    # Parse faculty assignments with detailed information extraction
-    faculty_section = content[content.index('Faculty Assignments:') + 1:]
-    for line in faculty_section:
-        if line.strip():
-            # Split faculty information into components
-            parts = line.split(' - ')
-            faculty_info = parts[0]
-            preference = parts[1].split(': ')[1] if len(parts) > 1 else None
+    # Parse faculty data
+    i = 0
+    while i < len(rows):
+        row = rows[i]
+        if row[0] == "Professor Name":
+            name = row[1]
+            i += 1
+            priority = int(rows[i][1]) if rows[i][1] else 0  # Default priority to 0 if blank
+            i += 1
+            courses = [c for c in rows[i][1:] if c]  # Filter out blank spaces
+            i += 1
+            preferred_days = [d for d in rows[i][1:] if d]  # Filter out blank spaces
+            i += 1
+            preferred_times = [t for t in rows[i][1:] if t]  # Filter out blank spaces
+            i += 1
+            preferred_classrooms = [c for c in rows[i][1:] if c]  # Filter out blank spaces
+            i += 2  # Skip empty rows
 
-            # Separate name and assigned classes
-            name_classes = faculty_info.split(', ')
-            name = name_classes[0]
-            classes = name_classes[1:]
-
-            # Create Faculty object and add to list
-            faculty_list.append(Faculty(
+            # Create Faculty object
+            faculty = Faculty(
                 faculty_id=len(faculty_list) + 1,
                 name=name,
-                classes=classes,
-                preference=preference
-            ))
+                courses=courses,
+                preference={
+                    "priority": priority,
+                    "days": preferred_days,
+                    "times": preferred_times,
+                    "classrooms": preferred_classrooms
+                }
+            )
+            faculty_list.append(faculty)
 
-    # Add parsed data to the database
-    for course in courses_offered:
-        db_manager.add_course(course, None)
+            # Add faculty to the database
+            db_manager.add_faculty(
+                name=faculty.Name,
+                priority=faculty.Preference["priority"],
+                class1=faculty.Courses[0] if len(faculty.Courses) > 0 else None,
+                class2=faculty.Courses[1] if len(faculty.Courses) > 1 else None,
+                class3=faculty.Courses[2] if len(faculty.Courses) > 2 else None,
+                class4=faculty.Courses[3] if len(faculty.Courses) > 3 else None,
+                class5=faculty.Courses[4] if len(faculty.Courses) > 4 else None
+            )
 
-    for course in courses_offered:
-        req_room = classroom_preferences.get(course, None)
-        if req_room is not None:
-            building, room = req_room
-            # Extract the room number from the tuple and remove any unwanted text
-            room_number = room.split()[-1]  # Get the last part after splitting by spaces
-            # Get the building abbreviation
-            building_abbr = building_abbreviations.get(building, "")
-            # Construct the full room assignment
-            req_room = f"{building_abbr}{room_number}"
-        print(f"Updating course: {course}, ReqRoom: {req_room}")  # Debug print
+            # Add preferences to the database
+            for day in preferred_days:
+                db_manager.add_preference(faculty_name=faculty.Name, preference_type="Day", preference_value=day)
+            for time in preferred_times:
+                db_manager.add_preference(faculty_name=faculty.Name, preference_type="Time", preference_value=time)
+            for room in preferred_classrooms:
+                db_manager.add_preference(faculty_name=faculty.Name, preference_type="Room", preference_value=room)
 
-        # Query the course and update the ReqRoom value
-        course_to_update = db_manager.session.query(Course).filter_by(CourseID=course).first()
-        if course_to_update:
-            course_to_update.ReqRoom = req_room
-            db_manager.safe_commit()
+        else:
+            i += 1
 
+    # Parse classroom data
+    classroom_start = next(i for i, row in enumerate(rows) if row[0] == "Classrooms available")
+    classroom_rows = rows[classroom_start + 1:classroom_start + 5]  # Extract rows for classroom attributes
+    room_ids = rows[classroom_start][1:]  # Extract room IDs from the header row
+
+    for col_index, room_id in enumerate(room_ids):
+        if room_id:  # Skip empty columns
+            try:
+                classroom = {
+                    "room_id": room_id,
+                    "department": classroom_rows[0][col_index + 1],  # Department of the classroom
+                    "building": classroom_rows[1][col_index + 1],    # Building of the classroom
+                    "seats": int(classroom_rows[2][col_index + 1]) if classroom_rows[2][col_index + 1] else 0  # Seats
+                }
+                classroom_data.append(classroom)
+
+                # Add classroom to the database
+                db_manager.add_classroom(
+                    room_id=classroom["room_id"],
+                    department=classroom["department"],
+                    building=classroom["building"],
+                    room=classroom["room_id"],
+                    capacity=classroom["seats"]
+                )
+            except (IndexError, ValueError):
+                print(f"Skipping invalid classroom column: {room_id}")
+
+    # Parse course data
+    course_start = next(i for i, row in enumerate(rows) if row[0] == "Course Id")
+    course_rows = rows[course_start + 1:course_start + 4]  # Extract rows for course attributes
+    course_ids = rows[course_start][1:]  # Extract course IDs from the header row
+
+    for col_index, course_id in enumerate(course_ids):
+        if course_id:  # Skip empty columns
+            try:
+                course = {
+                    "course_id": course_id,
+                    "department": course_rows[0][col_index + 1],  # Department of the course
+                    "max_enrollment": int(course_rows[1][col_index + 1]) if course_rows[1][col_index + 1] else 0,  # Max enrollment
+                    "required_rooms": [course_rows[2][col_index + 1]] if course_rows[2][col_index + 1] else []  # Required rooms (if any)
+                }
+                course_data.append(course)
+
+                # Add course to the database
+                db_manager.add_course(
+                    course_id=course["course_id"],
+                    department=course["department"],
+                    max_enrollment=course["max_enrollment"],
+                    req_room1=course["required_rooms"][0] if len(course["required_rooms"]) > 0 else None,
+                    req_room2=course["required_rooms"][1] if len(course["required_rooms"]) > 1 else None,
+                    req_room3=course["required_rooms"][2] if len(course["required_rooms"]) > 2 else None,
+                    req_room4=course["required_rooms"][3] if len(course["required_rooms"]) > 3 else None,
+                    req_room5=course["required_rooms"][4] if len(course["required_rooms"]) > 4 else None
+                )
+            except (IndexError, ValueError):
+                print(f"Skipping invalid course column: {course_id}")
+
+    # Print parsed data
+    print("\nParsed Faculty Data:")
     for faculty in faculty_list:
-        db_manager.add_faculty(
-            name=faculty.Name,
-            class1=faculty.Class1,
-            class2=faculty.Class2,
-            class3=faculty.Class3,
-            preference=faculty.Preference
-        )
+        faculty.print_details()
 
-    # Add timeslots to the database
-    timeslots = [
-        ("MW", "08:00"), ("MW", "09:35"), ("MW", "11:10"), ("MW", "12:45"),
-        ("MW", "14:20"), ("MW", "15:55"), ("MW", "17:30"), ("MW", "19:05"),
-        ("TR", "08:00"), ("TR", "09:35"), ("TR", "11:10"), ("TR", "12:45"),
-        ("TR", "14:20"), ("TR", "15:55"), ("TR", "17:30"), ("TR", "19:05")
-    ]
+    print("\nParsed Classroom Data:")
+    for classroom in classroom_data:
+        print(f"Room ID: {classroom['room_id']}, Department: {classroom['department']}, "
+              f"Building: {classroom['building']}, Seats: {classroom['seats']}")
 
-    for days, start_time in timeslots:
-        db_manager.add_timeslot(days, start_time)
+    print("\nParsed Course Data:")
+    for course in course_data:
+        print(f"Course ID: {course['course_id']}, Department: {course['department']}, "
+              f"Max Enrollment: {course['max_enrollment']}, Required Rooms: {', '.join(course['required_rooms'])}")
 
-    # Add classrooms to the database
-    classrooms = [
-        "OKT131", "OKT132", "OKT133", "OKT134", "OKT241", "OKT242", "OKT243", "OKT244",
-        "OKT341", "OKT342", "OKT343", "OKT344", "OKT451", "OKT452", "OKT453", "OKT454"
-    ]
-    for room in classrooms:
-        db_manager.add_classroom(room_id=room, building="Technology Hall", room=room)
+    print("\nParsed Timeslot Data:")
+    for timeslot in timeslot_data:
+        print(f"Day: {timeslot['day']}, Start Time: {timeslot['start_time']}, End Time: {timeslot['end_time']}")
 
-    return department, location, courses_offered, classroom_preferences, faculty_list
+    return faculty_list, classroom_data, course_data, timeslot_data
 
-
-# Define a mapping of building names to their abbreviations
-building_abbreviations = {
-    "Technology Hall": "OKT",
-    # Add other buildings and their abbreviations here if needed
-}
 
 if __name__ == "__main__":
     # Define the file path
-    file_path = 'Dept1ClassData.csv'
+    file_path = 'CSVFile.csv'
 
     try:
         # Parse the CSV file
-        department, location, courses_offered, classroom_preferences, faculty_list = parse_csv(file_path)
+        faculty_list, classroom_data, course_data, timeslot_data = parse_csv(file_path)
 
         # Initialize DatabaseManager and start session
         db_manager = DatabaseManager()
         db_manager.start_session()
 
-        # Add parsed data to the database
-        for course in courses_offered:
-            db_manager.add_course(course, None)
-
-        for course in courses_offered:
-            req_room = classroom_preferences.get(course, None)
-            if req_room is not None:
-                building, room = req_room
-                room_number = room.split()[-1]
-                building_abbr = building_abbreviations.get(building, "")
-                req_room = f"{building_abbr}{room_number}"
-                print(f"Updating course: {course}, ReqRoom: {req_room}")
-                course_to_update = db_manager.session.query(Course).filter_by(CourseID=course).first()
-                if course_to_update:
-                    course_to_update.ReqRoom = req_room
-                    db_manager.safe_commit()
-
-        for faculty in faculty_list:
-            db_manager.add_faculty(
-                name=faculty.Name,
-                class1=faculty.Class1,
-                class2=faculty.Class2,
-                class3=faculty.Class3,
-                preference=faculty.Preference
-            )
-
-        # Add timeslots to the database
-        timeslots = [
-            ("MW", "08:00"), ("MW", "09:35"), ("MW", "11:10"), ("MW", "12:45"),
-            ("MW", "14:20"), ("MW", "15:55"), ("MW", "17:30"), ("MW", "19:05"),
-            ("TR", "08:00"), ("TR", "09:35"), ("TR", "11:10"), ("TR", "12:45"),
-            ("TR", "14:20"), ("TR", "15:55"), ("TR", "17:30"), ("TR", "19:05")
-        ]
-        for days, start_time in timeslots:
-            db_manager.add_timeslot(days, start_time)
-
-        # Add classrooms to the database
-        classrooms = [
-            "OKT131", "OKT132", "OKT133", "OKT134", "OKT241", "OKT242", "OKT243", "OKT244",
-            "OKT341", "OKT342", "OKT343", "OKT344", "OKT451", "OKT452", "OKT453", "OKT454"
-        ]
-        for room in classrooms:
-            db_manager.add_classroom(room_id=room, building="Technology Hall", room=room)
-
         # Print data from the database
         print("\nData from the database:")
+
         print("\nFaculty:")
         for faculty in db_manager.get_faculty():
-            print(f"Faculty ID: {faculty.FacultyID}, Name: {faculty.Name}")
+            print(f"Faculty ID: {faculty.FacultyID}, Name: {faculty.Name}, Priority: {faculty.Priority}, "
+                  f"Classes: {faculty.Class1}, {faculty.Class2}, {faculty.Class3}, {faculty.Class4}, {faculty.Class5}")
 
         print("\nClassrooms:")
-        for classroom in db_manager.get_classroom():
-            print(f"RoomID: {classroom.RoomID}, Building: {classroom.Building}")
+        for classroom in db_manager.get_classrooms():
+            print(f"RoomID: {classroom.RoomID}, Department: {classroom.Department}, "
+                  f"Building: {classroom.Building}, Capacity: {classroom.Capacity}")
 
         print("\nCourses:")
         for course in db_manager.get_course():
-            print(f"CourseID: {course.CourseID}, ReqRoom: {course.ReqRoom}")
+            required_rooms = [
+                course.ReqRoom1,
+                course.ReqRoom2,
+                course.ReqRoom3,
+                course.ReqRoom4,
+                course.ReqRoom5
+            ]
+            # Filter out None values from the required rooms
+            required_rooms = [room for room in required_rooms if room is not None]
+            print(f"CourseID: {course.CourseID}, Department: {course.Department}, "
+                  f"MaxEnrollment: {course.MaxEnrollment}, Required Rooms: {', '.join(required_rooms)}")
 
         print("\nTimeslots:")
-        for timeslot in db_manager.get_timeslot():
-            print(f"SlotID: {timeslot.SlotID}, Days: {timeslot.Days}")
+        for timeslot in db_manager.get_timeslots():
+            print(f"Day: {timeslot.Day}, Start Time: {timeslot.StartTime}, End Time: {timeslot.EndTime}")
 
         # End the database session
         db_manager.end_session()
