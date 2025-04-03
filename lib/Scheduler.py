@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, and_, or_
-from .DatabaseManager import DatabaseManager, Faculty, Course, TimeSlot, Schedule, Classroom  # Assuming database_manager.py contains the schema
+from .DatabaseManager import DatabaseManager, Faculty, Course, TimeSlot, Schedule, Classroom, Preference  # Assuming database_manager.py contains the schema
 
 import logging
 
@@ -21,36 +21,59 @@ class CourseScheduler:
             or_(
                 Course.CourseID == Faculty.Class1,
                 Course.CourseID == Faculty.Class2,
-                Course.CourseID == Faculty.Class3
+                Course.CourseID == Faculty.Class3,
+                Course.CourseID == Faculty.Class4,
+                Course.CourseID == Faculty.Class5
             )
         ).order_by(
             # Within each group, order so that courses with a non-null required room come first
             Course.ReqRoom.isnot(None).desc(),
-            # Order so that courses with a non-null faculty Preference come first
-            Faculty.Preference.isnot("None").desc()
+            # # Order so that courses with a non-null faculty Preference come first
+            # Faculty.Preference.isnot("None").desc()
+            # Order based on the faculty member's priority 1 being at the top of the list
+            Faculty.Priority.asc()
         )
+
         return query.all()
     
     def get_preferred_slots(self, professor):
         all_slots = self.session.query(TimeSlot).all() #Get all timeslots
         #all_slots should be an array of each timeslot objects timeslot.SlotID
         available_slots = []
+        day_slots = []
+        time_slots = []
 
-        # For profs with preference
-        if professor.Preference != "None":
-            if "Morning" in professor.Preference:
-                    available_slots += [slot for slot in all_slots if slot.StartTime < "12:00"]
-            elif "Afternoon" in professor.Preference:
-                    available_slots += [slot for slot in all_slots if slot.StartTime >= "12:00" and slot.StartTime < "17:00"]
-            elif "Evening" in professor.Preference:
-                    available_slots += [slot for slot in all_slots if slot.StartTime >= "17:00"]
-            
-            if "Mon-Wed" in professor.Preference:
-                available_slots += [slot for slot in all_slots if slot.Days == "MW"]
-            elif "Tues-Thurs" in professor.Preference:
-                available_slots += [slot for slot in all_slots if slot.Days == "TR"]
+        #query preferences table for FacultyID where FacultyID = professor.FacultyID and PreferenceType = "Time"
+        timePreferences = self.session.query(Preference).filter(Preference.FacultyID == professor.FacultyID, Preference.PreferenceType == "Time").all()
+        
+        #query preferences table for FacultyID where FacultyID = professor.FacultyID and PreferenceType = "Day"
+        dayPreferences = self.session.query(Preference).filter(Preference.FacultyID == professor.FacultyID, Preference.PreferenceType == "Day").all()
+
+        
+
+        if dayPreferences:
+            for day in dayPreferences:
+                #add all 
+                day_slots += [slot for slot in all_slots if slot.Days == day.PreferenceValue]
         else:
-            available_slots = all_slots
+            # If no day preferences, add all slots
+            day_slots = all_slots
+
+        # If no time preferences, add all slots
+        if timePreferences:
+            for time in timePreferences:
+                if time.PreferenceValue == "Morning":
+                    time_slots += [slot for slot in all_slots if slot.StartTime < "12:00"]
+                elif time.PreferenceValue == "Afternoon":
+                    time_slots += [slot for slot in all_slots if slot.StartTime >= "12:00" and slot.StartTime < "17:00"]
+                elif time.PreferenceValue == "Evening":
+                    time_slots += [slot for slot in all_slots if slot.StartTime >= "17:00"]
+            #filter day_slots by time_slots into available_slots
+            available_slots += [slot for slot in day_slots if slot in time_slots]
+        else:
+            # If no time preferences, add all slots
+            available_slots = day_slots
+
         
         #Remove slots where professor is already scheduled
         filtered_slots = []
