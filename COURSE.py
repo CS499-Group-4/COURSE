@@ -11,13 +11,21 @@ from pages.uploadPage import UploadPage
 from pages.settingPage import SettingPage
 from pages.conflictPage import ConflictPage
 from pages.viewPage import ViewPage
+from pages.exportPage import ExportPage
+from pages.viewPage_overall import ViewPageOverall
+from pages.viewPage_course import ViewPageCourse
+from pages.viewPage_faculty import ViewPageFaculty
+from pages.viewPage_perferences import ViewPagePreference
+from pages.viewPage_times import ViewPageTimes
+from pages.viewPage_rooms import ViewPageRooms
+
 
 # ---------------------------
 # Common helper functions and resource paths
 # ---------------------------
 OUTPUT_PATH = Path(__file__).parent
 # Other pages can be adjusted as needed
-ASSETS_PATH = OUTPUT_PATH / Path(r"assets/frame0")
+ASSETS_PATH = OUTPUT_PATH / Path(r"assets/framehome")
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
@@ -44,7 +52,7 @@ class MainApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
         
         self.frames = {}
-        for F in (HomePage, StartPage, UploadPage, SettingPage, ConflictPage, ViewPage):
+        for F in (HomePage, StartPage, UploadPage, SettingPage, ConflictPage, ViewPage, ExportPage,ViewPageOverall,ViewPageCourse, ViewPageFaculty, ViewPagePreference, ViewPageTimes, ViewPageRooms):
             pageName = F.__name__
             page = F(parent=container, controller=self)
             self.frames[pageName] = page
@@ -62,3 +70,6 @@ class MainApp(tk.Tk):
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()
+
+
+
