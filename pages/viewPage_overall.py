@@ -140,6 +140,11 @@ class ViewPageOverall(tk.Frame):
 #———————————————————————————————————————————————————————
 #                           TABLE
 #———————————————————————————————————————————————————————
+        #file drop down
+        file_options = ["file1", "file2", "file3", "file4"]
+        course_dropdown = ttk.Combobox(self, values=file_options, state="readonly")  
+        course_dropdown.set("Select File")  
+        course_dropdown.place( x=300.0 * scale_x, y=134.0 * scale_y, width=200.0 * scale_x, height=100.0 * scale_y)
 
         # Course
         self.columns = ("Course ID",)
@@ -147,16 +152,14 @@ class ViewPageOverall(tk.Frame):
         tree_Course.heading("Course ID", text="Course ID")
         tree_Course.column("Course ID", width=int(350 * scale_x), anchor="center")
         tree_Course.insert("", "end", values=("CS101",))
-        tree_Course.place(x=258.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
-        
-
+        tree_Course.place(x=673.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)  
         #Faculty
         self.columns4 = ("Faculty",)
         tree_Faculty = ttk.Treeview(self, columns=self.columns4, show="headings", height=1)
         tree_Faculty.heading("Faculty", text="Faculty")
         tree_Faculty.column("Faculty", width=int(350 * scale_x), anchor="center")
         tree_Faculty.insert("", "end", values=("Dr. Smith",))
-        tree_Faculty.place(x=673.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)  
+        tree_Faculty.place(x=1088.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
         
        # Perferences
         self.columns5 = ("Perferences",)
@@ -164,7 +167,7 @@ class ViewPageOverall(tk.Frame):
         tree_Perferences.heading("Perferences", text="Perferences")
         tree_Perferences.column("Perferences", width=int(350 * scale_x), anchor="center")
         tree_Perferences.insert("", "end", values=("cs101 need i room okt346",))
-        tree_Perferences.place(x=1088.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
+        tree_Perferences.place(x=258.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
 
 
@@ -174,7 +177,7 @@ class ViewPageOverall(tk.Frame):
         tree_Rooms.heading("Rooms", text="Rooms")
         tree_Rooms.column("Rooms", width=int(350 * scale_x), anchor="center")
         tree_Rooms.insert("", "end", values=("okt346",))
-        tree_Rooms.place(x=459.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
+        tree_Rooms.place(x=673.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
 
         #Time
@@ -183,7 +186,7 @@ class ViewPageOverall(tk.Frame):
         tree_Time.heading("Time", text="Time")
         tree_Time.column("Time", width=int(350 * scale_x), anchor="center")
         tree_Time.insert("", "end", values=("9:40-11:00",))
-        tree_Time.place(x=962.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
+        tree_Time.place(x=1088.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
 
 

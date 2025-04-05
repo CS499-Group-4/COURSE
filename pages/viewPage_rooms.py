@@ -132,7 +132,7 @@ class ViewPageRooms(tk.Frame):
         # ----------------------------Time------------------------------------------
         btn12_img = scaled_photoimage(str(relative_to_assets("button_12.png")), scale_x, scale_y)
         btn12 = Button(self, image=btn12_img, borderwidth=0, highlightthickness=0,
-                      command=lambda: controller.show_frame("ViewPageOverall"), relief="flat")
+                      command=lambda: controller.show_frame("ViewPageTimes"), relief="flat")
         btn12.image = btn12_img
         btn12.place(x=1263.0 * scale_x, y=15.0 * scale_y, width=150.0 * scale_x, height=64.0 * scale_y) 
 
