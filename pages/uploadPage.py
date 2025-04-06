@@ -112,34 +112,57 @@ class UploadPage(tk.Frame):
                 print("Chosen file path:", file_path)
                 self.canvas.itemconfig(self.selected_file_text_id, text=selected_name)
 
-                # 隐藏状态图标（避免重叠）
                 self.canvas.itemconfigure(self.success_img_id, state='hidden')
                 self.canvas.itemconfigure(self.failed_img_id, state='hidden')
                 self.canvas.itemconfigure(self.uploading_img_id, state='normal')
 
                 try:
-                    # 复制文件到 uploads 文件夹
                     os.makedirs("uploads", exist_ok=True)
                     target_path = os.path.join("uploads", selected_name)
                     shutil.copy(file_path, target_path)
-
-                    # 解析并导入数据库
+                    #**************************************************************************************************************************
                     parse_csv_2(target_path)
+                    #**************************************************************************************************************************
 
-                    # 提示成功
+                    # Prompt success
                     self.canvas.itemconfigure(self.uploading_img_id, state='hidden')
                     self.canvas.itemconfigure(self.success_img_id, state='normal')
-                    messagebox.showinfo("上传成功", f"{selected_name} 已成功导入数据库。")
+                    messagebox.showinfo("Upload Successfully", f"{selected_name} The database has been successfully imported。")
+                    self.notify_view_page_refresh()
+                    
 
-                    # 如果 ViewPageOverall 页面存在，刷新它的下拉菜单
-                    if hasattr(self.controller.frames["ViewPageOverall"], "refresh_file_dropdown"):
-                        self.controller.frames["ViewPageOverall"].refresh_file_dropdown()
+
 
                 except Exception as e:
                     print(f"Error parsing CSV: {e}")
                     self.canvas.itemconfigure(self.uploading_img_id, state='hidden')
                     self.canvas.itemconfigure(self.failed_img_id, state='normal')
-                    messagebox.showerror("上传失败", f"无法解析该文件：\n{e}")
+                    messagebox.showerror("Upload failed", f"Unable to parse the file：\n{e}")
+
+        self.file_tree = ttk.Treeview(self, columns=("filename", "action"), show="headings", height=8)
+        self.file_tree.heading("filename", text="Uploaded Files")
+        self.file_tree.column("filename", width=420, anchor="center")
+        self.file_tree.heading("action", text="Action")
+        self.file_tree.column("action", width=180, anchor="center")
+        self.file_tree.place(x=280 * scale_x, y=250 * scale_y, width=600, height=400)
+        
+
+
+
+        self.refresh_file_list()
+
+
+
+
+         # File refresh
+        refresh_img = scaled_photoimage(str(relative_to_assets("refresh_button.png")), scale_x, scale_y)
+        refresh_btn = Button(self, image=refresh_img, borderwidth=0, highlightthickness=0,
+                             command=self.refresh_file_list, relief="flat")
+        refresh_btn.image = refresh_img
+        refresh_btn.place(x=664.0 * scale_x, y=964.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
+
+        self.refresh_file_list()
+
 
 
         
@@ -150,10 +173,17 @@ class UploadPage(tk.Frame):
         btn6.image = btn6_img
         btn6.place(x=250.0 * scale_x, y=25.0 * scale_y, width=1177.0 * scale_x, height=211.0 * scale_y)
         
-        self.canvas.create_text(481.0 * scale_x, 452.0 * scale_y, anchor="nw",
-                           text="File name", fill="#094478", font=("Roboto Black", int(20 * scale_y)))
-        self.canvas.create_text(482.0 * scale_x, 615.0 * scale_y, anchor="nw",
-                           text="File name", fill="#094478", font=("Roboto Black", int(20 * scale_y)))
+
+
+        
+        # self.canvas.create_text(481.0 * scale_x, 452.0 * scale_y, anchor="nw",
+        #                    text="File name", fill="#094478", font=("Roboto Black", int(20 * scale_y)))
+        # self.canvas.create_text(482.0 * scale_x, 615.0 * scale_y, anchor="nw",
+        #                    text="File name", fill="#094478", font=("Roboto Black", int(20 * scale_y)))
+
+
+
+
         #logo img
         img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
         self.canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
@@ -164,7 +194,7 @@ class UploadPage(tk.Frame):
         self.success_img_id = self.canvas.create_image(
             372.0 * scale_x, 322.0 * scale_y, image=img2, state='hidden'
         )
-        self.canvas.image2 = img2  # 防止图片被GC
+        self.canvas.image2 = img2  
 
         # uploading img ⏳
         img3 = scaled_photoimage(str(relative_to_assets("image_3.png")), scale_x, scale_y)
@@ -182,4 +212,42 @@ class UploadPage(tk.Frame):
 
         
         self.canvas.scale("all", 0, 0, scale_x, scale_y)
+        
+
+    def notify_view_page_refresh(self):
+        try:
+            view_page = self.controller.frames["ViewPageOverall"]
+            view_page.refresh_file_dropdown()
+        except Exception as e:
+                
+            print("刷新 ViewPageOverall 失败:", e)
+            
+
+    def refresh_file_list(self):
+        for item in self.file_tree.get_children():
+            self.file_tree.delete(item)
+
+        if not os.path.exists("uploads"):
+            os.makedirs("uploads")
+
+        for file in os.listdir("uploads"):
+            self.file_tree.insert("", "end", values=(file, "Delete"))
+
+        # Add delete button click event
+        def on_tree_click(event):
+            selected = self.file_tree.selection()
+            if selected:
+                item = self.file_tree.item(selected[0])
+                filename = item["values"][0]
+                column = self.file_tree.identify_column(event.x)
+                if column == "#2":  # Delete action
+                    full_path = os.path.join("uploads", filename)
+                    if os.path.exists(full_path):
+                        os.remove(full_path)
+                        self.refresh_file_list()
+                        self.notify_view_page_refresh()
+                        messagebox.showinfo("Deleted", f"File '{filename}' has been deleted.")
+
+        self.file_tree.bind("<ButtonRelease-1>", on_tree_click)
+
 
