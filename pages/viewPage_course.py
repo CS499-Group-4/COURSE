@@ -5,6 +5,9 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
+from lib.CSV_Parser import parse_csv_2
+from lib.DatabaseManager import DatabaseManager
+
 #from tktooltip import ToolTip
 
 # ---------------------------
@@ -140,34 +143,54 @@ class ViewPageCourse(tk.Frame):
 #———————————————————————————————————————————————————————
 #                           TABLE
 #———————————————————————————————————————————————————————
-
-        # 创建 Treeview 表格
         self.columns = ("Course ID",)
-        tree_Course = ttk.Treeview(self, columns=self.columns, show="headings", height=10)
-        tree_Course.heading("Course ID", text="Course ID")
-        tree_Course.column("Course ID", width=int(1150 * scale_x), anchor="center")
-        tree_Course.insert("", "end", values=("CS101",))
-        tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
+        # 创建 Treeview 表格
+        self.tree_Course = ttk.Treeview(self, columns=self.columns, show="headings", height=10)
+        self.tree_Course.heading("Course ID", text="Course ID")
+        self.tree_Course.column("Course ID", width=int(1150 * scale_x), anchor="center")
+        self.tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
 
-        # course_id_entry
-        course_id_entry = Entry(
-            self,bg="#DAEBFA", fg="#0A4578", 
-            font=("Arial", int(18)), 
-            relief="flat",
-            insertbackground="#0A4578" )
-        course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
-
+        self.course_id_entry = Entry(
+            self, bg="#DAEBFA", fg="#0A4578", 
+            font=("Arial", int(18)), relief="flat",
+            insertbackground="#0A4578"
+        )
+        self.course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
         def add_course():
-            value = course_id_entry.get().strip()
+            value = self.course_id_entry.get().strip()
             if value:
-                tree_Course.insert("", "end", values=(value,))
-                course_id_entry.delete(0, "end")
-
+                db = DatabaseManager()
+                db.start_session()
+                db.add_course(course_id=value, department="Manual", max_enrollment=0)
+                db.end_session()
+                self.tree_Course.insert("", "end", values=(value,))
+                self.course_id_entry.delete(0, "end")
         # add
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
         btn13.image = btn13_img
         btn13.place(x=1175.0 * scale_x, y=931.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
+        
+
+                
+    def load_courses_from_file(self, file_path):
+        try:
+            _, _, course_data, _, _ = parse_csv_2(file_path, insert_into_db=False)
+            self.tree_Course.delete(*self.tree_Course.get_children())
+            for course in course_data:
+                self.tree_Course.insert("", "end", values=(course["course_id"],))
+        except Exception as e:
+            print(f"Error loading course data: {e}")
+                
+    def tkraise(self, *args, **kwargs):
+        super().tkraise(*args, **kwargs)
+        if hasattr(self.controller, "selected_file_path"):
+            self.load_courses_from_file(self.controller.selected_file_path)
+
+
+
+        
+
 
 
 

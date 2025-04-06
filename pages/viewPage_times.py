@@ -6,6 +6,8 @@ from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
 #from tktooltip import ToolTip
+from lib.CSV_Parser import parse_csv_2
+from lib.DatabaseManager import DatabaseManager
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -136,40 +138,60 @@ class ViewPageTimes(tk.Frame):
         btn12.image = btn12_img
         btn12.place(x=1263.0 * scale_x, y=15.0 * scale_y, width=150.0 * scale_x, height=64.0 * scale_y) 
 
-
 #———————————————————————————————————————————————————————
 #                           TABLE
 #———————————————————————————————————————————————————————
 
-        # 创建 Treeview 表格
         self.columns3 = ("Time",)
-        tree_Time = ttk.Treeview(self, columns=self.columns3, show="headings", height=1)
-        tree_Time.heading("Time", text="Time")
-        tree_Time.column("Time", width=int(350 * scale_x), anchor="center")
-        tree_Time.insert("", "end", values=("9:40-11:00",))
-        tree_Time.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
+        self.tree_Time = ttk.Treeview(self, columns=self.columns3, show="headings", height=1)
+        self.tree_Time.heading("Time", text="Time")
+        self.tree_Time.column("Time", width=int(350 * scale_x), anchor="center")
+        self.tree_Time.insert("", "end", values=("MW 09:40-11:00",))
+        self.tree_Time.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
 
-        # course_id_entry
-        course_id_entry = Entry(
-            self,bg="#DAEBFA", fg="#0A4578", 
+        self.Time_entry = Entry(
+            self, bg="#DAEBFA", fg="#0A4578", 
             font=("Arial", int(18)), 
             relief="flat",
-            insertbackground="#0A4578" )
-        course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
+            insertbackground="#0A4578"
+        )
+        self.Time_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
 
-        def add_course():
-            value = course_id_entry.get().strip()
-            if value:
-                tree_Time.insert("", "end", values=(value,))
-                course_id_entry.delete(0, "end")
+        def add_time():
+            value = self.Time_entry.get().strip()
+            try:
+                if value and " " in value and "-" in value:
+                    day, time_range = value.split(" ")
+                    start, end = time_range.split("-")
+                    db = DatabaseManager()
+                    db.start_session()
+                    db.add_timeslot(day, start, end)
+                    db.end_session()
+                    self.tree_Time.insert("", "end", values=(value,))
+                    self.Time_entry.delete(0, "end")
+            except Exception as e:
+                print(f"Failed to add time: {e}")
 
-        # add
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
-        btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
+        btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_time)
         btn13.image = btn13_img
         btn13.place(x=1175.0 * scale_x, y=931.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
 
 
+    def load_times_from_file(self, file_path):
+        try:
+            _, _, _, timeslot_data, _ = parse_csv_2(file_path, insert_into_db=False)
+            self.tree_Time.delete(*self.tree_Time.get_children())
+            for slot in timeslot_data:
+                time_str = f"{slot['day']} {slot['start_time']}-{slot['end_time']}"
+                self.tree_Time.insert("", "end", values=(time_str,))
+        except Exception as e:
+            print(f"Error loading time data: {e}")
+
+    def tkraise(self, *args, **kwargs):
+        super().tkraise(*args, **kwargs)
+        if hasattr(self.controller, "selected_file_path"):
+            self.load_times_from_file(self.controller.selected_file_path)
 
 
 

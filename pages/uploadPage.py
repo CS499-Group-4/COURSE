@@ -6,6 +6,10 @@ from PIL import Image, ImageTk
 import os
 from lib.DatabaseManager import DatabaseManager  # Import the DatabaseManager class
 from lib.CSV_Parser import parse_csv  # Import the parse_csv function
+from tkinter import messagebox
+#?????????????????????????????????????????????????????????????????????????????????
+from lib.CSV_Parser import parse_csv_2
+import shutil
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -23,6 +27,8 @@ def scaled_photoimage(image_path: str, scale_x: float, scale_y: float) -> ImageT
     new_size = (int(orig_width * scale_x), int(orig_height * scale_y))
     img = img.resize(new_size, resample=Image.Resampling.LANCZOS)
     return ImageTk.PhotoImage(img)
+
+
 
 # ---------------------------
 # UploadPage: Frame 1
@@ -106,38 +112,36 @@ class UploadPage(tk.Frame):
                 print("Chosen file path:", file_path)
                 self.canvas.itemconfig(self.selected_file_text_id, text=selected_name)
 
+                # 隐藏状态图标（避免重叠）
+                self.canvas.itemconfigure(self.success_img_id, state='hidden')
+                self.canvas.itemconfigure(self.failed_img_id, state='hidden')
+                self.canvas.itemconfigure(self.uploading_img_id, state='normal')
+
                 try:
-                    # Call the CSV parser with the selected file path
-                    parse_csv(file_path)
+                    # 复制文件到 uploads 文件夹
+                    os.makedirs("uploads", exist_ok=True)
+                    target_path = os.path.join("uploads", selected_name)
+                    shutil.copy(file_path, target_path)
 
-                    # Initialize DatabaseManager to query the database
-                    db_manager = DatabaseManager()
-                    db_manager.start_session()
+                    # 解析并导入数据库
+                    parse_csv_2(target_path)
 
-                    # Print data from the database
-                    print("\nData from the database:")
-                    
-                    print("\nFaculty:")
-                    for faculty in db_manager.get_faculty():
-                        print(f"Faculty ID: {faculty.FacultyID}, Name: {faculty.Name}")
+                    # 提示成功
+                    self.canvas.itemconfigure(self.uploading_img_id, state='hidden')
+                    self.canvas.itemconfigure(self.success_img_id, state='normal')
+                    messagebox.showinfo("上传成功", f"{selected_name} 已成功导入数据库。")
 
-                    print("\nClassrooms:")
-                    for classroom in db_manager.get_classrooms():
-                        print(f"RoomID: {classroom.RoomID}, Building: {classroom.Building}")
-
-                    print("\nCourses:")
-                    for course in db_manager.get_course():
-                        print(f"CourseID: {course.CourseID}, ReqRoom: {course.ReqRoom}")
-
-                    print("\nTimeslots:")
-                    for timeslot in db_manager.get_timeslot():
-                        print(f"SlotID: {timeslot.SlotID}, Days: {timeslot.Days}")
-
-                    # End the database session
-                    db_manager.end_session()
+                    # 如果 ViewPageOverall 页面存在，刷新它的下拉菜单
+                    if hasattr(self.controller.frames["ViewPageOverall"], "refresh_file_dropdown"):
+                        self.controller.frames["ViewPageOverall"].refresh_file_dropdown()
 
                 except Exception as e:
-                    print(f"Error parsing CSV or querying database: {e}")
+                    print(f"Error parsing CSV: {e}")
+                    self.canvas.itemconfigure(self.uploading_img_id, state='hidden')
+                    self.canvas.itemconfigure(self.failed_img_id, state='normal')
+                    messagebox.showerror("上传失败", f"无法解析该文件：\n{e}")
+
+
         
         # File upload button: covers a large area, click to trigger upload
         btn6_img = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
@@ -155,18 +159,27 @@ class UploadPage(tk.Frame):
         self.canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
         self.canvas.image = img1
         
-        #upload success img
+       # upload success img ✅
         img2 = scaled_photoimage(str(relative_to_assets("image_2.png")), scale_x, scale_y)
-        self.canvas.create_image(372.0 * scale_x, 322.0 * scale_y, image=img2)
-        #uploading img
+        self.success_img_id = self.canvas.create_image(
+            372.0 * scale_x, 322.0 * scale_y, image=img2, state='hidden'
+        )
+        self.canvas.image2 = img2  # 防止图片被GC
+
+        # uploading img ⏳
         img3 = scaled_photoimage(str(relative_to_assets("image_3.png")), scale_x, scale_y)
-        self.canvas.create_image(372.0 * scale_x, 467.0 * scale_y, image=img3)
-        #upload failed img
+        self.uploading_img_id = self.canvas.create_image(
+            372.0 * scale_x, 467.0 * scale_y, image=img3, state='hidden'
+        )
+        self.canvas.image3 = img3
+
+        # upload failed img ❌
         img4 = scaled_photoimage(str(relative_to_assets("image_4.png")), scale_x, scale_y)
-        self.canvas.create_image(372.0 * scale_x, 633.0 * scale_y, image=img4)
-        #deleted file img
-        img5 = scaled_photoimage(str(relative_to_assets("image_5.png")), scale_x, scale_y)
-        self.canvas.create_image(1239.0 * scale_x, 317.0 * scale_y, image=img5)
+        self.failed_img_id = self.canvas.create_image(
+            372.0 * scale_x, 633.0 * scale_y, image=img4, state='hidden'
+        )
+        self.canvas.image4 = img4
+
         
         self.canvas.scale("all", 0, 0, scale_x, scale_y)
 

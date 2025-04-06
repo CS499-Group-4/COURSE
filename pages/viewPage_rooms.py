@@ -5,6 +5,8 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
+from lib.CSV_Parser import parse_csv_2
+from lib.DatabaseManager import DatabaseManager
 #from tktooltip import ToolTip
 
 # ---------------------------
@@ -142,34 +144,54 @@ class ViewPageRooms(tk.Frame):
 #———————————————————————————————————————————————————————
 
         self.columns2 = ("Rooms",)
-        tree_Rooms = ttk.Treeview(self, columns=self.columns2, show="headings", height=1)
-        tree_Rooms.heading("Rooms", text="Rooms")
-        tree_Rooms.column("Rooms", width=int(350 * scale_x), anchor="center")
-        tree_Rooms.insert("", "end", values=("okt346",))
-        tree_Rooms.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
+        self.tree_Rooms = ttk.Treeview(self, columns=self.columns2, show="headings", height=1)
+        self.tree_Rooms.heading("Rooms", text="Rooms")
+        self.tree_Rooms.column("Rooms", width=int(350 * scale_x), anchor="center")
+        self.tree_Rooms.insert("", "end", values=("OKT346",))
+        self.tree_Rooms.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
 
-        # course_id_entry
-        course_id_entry = Entry(
-            self,bg="#DAEBFA", fg="#0A4578", 
-            font=("Arial", int(18)), 
-            relief="flat",
-            insertbackground="#0A4578" )
-        course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
+        self.Rooms_entry = Entry(
+            self, bg="#DAEBFA", fg="#0A4578",
+            font=("Arial", int(18)), relief="flat",
+            insertbackground="#0A4578"
+        )
+        self.Rooms_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
 
-        def add_course():
-            value = course_id_entry.get().strip()
+        def add_room():
+            value = self.Rooms_entry.get().strip()
             if value:
-                tree_Rooms.insert("", "end", values=(value,))
-                course_id_entry.delete(0, "end")
+                db = DatabaseManager()
+                db.start_session()
+                db.add_classroom(
+                    room_id=value,
+                    department="Manual",
+                    building="Unknown",
+                    room=value,
+                    capacity=0
+                )
+                db.end_session()
+                self.tree_Rooms.insert("", "end", values=(value,))
+                self.Rooms_entry.delete(0, "end")
 
-        # add
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
-        btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
+        btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_room)
         btn13.image = btn13_img
         btn13.place(x=1175.0 * scale_x, y=931.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
 
 
+    def load_rooms_from_file(self, file_path):
+        try:
+            _, classroom_data, _, _, _ = parse_csv_2(file_path, insert_into_db=False)
+            self.tree_Rooms.delete(*self.tree_Rooms.get_children())
+            for room in classroom_data:
+                self.tree_Rooms.insert("", "end", values=(room["room_id"],))
+        except Exception as e:
+            print(f"Error loading room data: {e}")
 
+    def tkraise(self, *args, **kwargs):
+        super().tkraise(*args, **kwargs)
+        if hasattr(self.controller, "selected_file_path"):
+            self.load_rooms_from_file(self.controller.selected_file_path)
 
 
 
