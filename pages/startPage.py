@@ -5,10 +5,13 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-from tktooltip import ToolTip
+#from tktooltip import ToolTip
 
 #import the generate_scheduler() function from lib/scheduler.py
-from lib.Scheduler import generate_schedule, return_schedule, isScheduleEmpty
+from lib.Scheduler import CourseScheduler
+
+# Instantiate the scheduler
+scheduler = CourseScheduler()
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -33,15 +36,15 @@ def update_treeview():
     global tree
 
     tree.delete(*tree.get_children())
-    for entry in return_schedule():
+    for entry in scheduler.return_schedule():  # Use the scheduler instance
         tree.insert("", "end", values=entry)
 
 
 def runScheduler():
     # Call the generate_schedule() function
     print("Running scheduler...")
-    if isScheduleEmpty():
-        generate_schedule()
+    if scheduler.is_schedule_empty():  # Use the scheduler instance
+        scheduler.generate_schedule()  # Use the scheduler instance
     else:
         pass
     print("Scheduler complete, updating treeview...")
@@ -179,7 +182,7 @@ class StartPage(tk.Frame):
                           command=runScheduler, relief="flat")
         button_6.image = button_image_6
         button_6.place(x=1100.0 * scale_x, y=36.0 * scale_y, width=206.0 * scale_x, height=101.0 * scale_y)
-        ToolTip(button_6, msg="Click to Generate Schedule", delay=1.0)
+        #ToolTip(button_6, msg="Click to Generate Schedule", delay=1.0)
 
         #  CANCLE bottom
         # button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
@@ -227,7 +230,7 @@ class StartPage(tk.Frame):
                           command=lambda: print("button_8 clicked"), relief="flat")
         button_8.image = button_image_8
         button_8.place(x=1090.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
-        ToolTip(button_8, msg="Resolve All Conflicts", delay=1.0)
+        #ToolTip(button_8, msg="Resolve All Conflicts", delay=1.0)
 
 
 
@@ -245,7 +248,7 @@ class StartPage(tk.Frame):
                            command=lambda: print("button_10 clicked"), relief="flat")
         button_10.image = button_image_10
         button_10.place(x=942.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
-        ToolTip(button_10, msg="Back", delay=1.0)
+        #ToolTip(button_10, msg="Back", delay=1.0)
 
         
         # Update Button
@@ -254,7 +257,7 @@ class StartPage(tk.Frame):
                            command=lambda: print("button_11 clicked"), relief="flat")
         button_11.image = button_image_11
         button_11.place(x=1224.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
-        ToolTip(button_11, msg="Push Schedule Changes", delay=1.0)
+        #ToolTip(button_11, msg="Push Schedule Changes", delay=1.0)
 
         
         #logo iamge

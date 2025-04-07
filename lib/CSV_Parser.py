@@ -4,6 +4,7 @@
 
 import csv
 from lib.DatabaseManager import DatabaseManager, Course
+from datetime import datetime
 
 class Faculty:
     def __init__(self, faculty_id, name, courses, preference):
@@ -82,6 +83,30 @@ def parse_csv(file_path):
             i += 1
             preferred_classrooms = [c for c in rows[i][1:] if c]  # Filter out blank spaces
             i += 2  # Skip empty rows
+
+            # Reorder timeslot data based on the preferred times
+            ordered_timeslots = []
+            for preferred_time in preferred_times:
+                if preferred_time == "Morning":
+                    ordered_timeslots += [
+                        {"start_time": start_time, "end_time": end_time}
+                        for start_time, end_time in zip(start_times, end_times)
+                        if datetime.strptime(start_time, "%H:%M") < datetime.strptime("12:00", "%H:%M")
+                        and datetime.strptime(end_time, "%H:%M") <= datetime.strptime("12:00", "%H:%M")
+                    ]
+                elif preferred_time == "Afternoon":
+                    ordered_timeslots += [
+                        {"start_time": start_time, "end_time": end_time}
+                        for start_time, end_time in zip(start_times, end_times)
+                        if datetime.strptime("12:00", "%H:%M") <= datetime.strptime(start_time, "%H:%M") < datetime.strptime("17:00", "%H:%M")
+                        and datetime.strptime(end_time, "%H:%M") <= datetime.strptime("17:00", "%H:%M")
+                    ]
+                elif preferred_time == "Evening":
+                    ordered_timeslots += [
+                        {"start_time": start_time, "end_time": end_time}
+                        for start_time, end_time in zip(start_times, end_times)
+                        if datetime.strptime(start_time, "%H:%M") >= datetime.strptime("17:00", "%H:%M")
+                    ]
 
             # Create Faculty object
             faculty = Faculty(
