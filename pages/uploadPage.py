@@ -226,7 +226,7 @@ class UploadPage(tk.Frame):
             view_page.refresh_file_dropdown()
         except Exception as e:
                 
-            print("刷新 ViewPageOverall 失败:", e)
+            print("refresh ViewPageOverall failed:", e)
             
 
     def refresh_file_list(self):

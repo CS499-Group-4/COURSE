@@ -43,7 +43,7 @@ class ExportPage(tk.Frame):
         canvas = tk.Canvas(self, bg="#FFFFFF", height=orig_height, width=orig_width,
                            bd=0, highlightthickness=0, relief="ridge")
         canvas.place(x=0, y=0)
-        # canvas.create_rectangle(0.0, 1.0, 235.0, 1042.0, fill="#79BCF7", outline="")
+        canvas.create_rectangle(0.0, 1.0, 235.0, 1042.0, fill="#79BCF7", outline="")
         canvas.create_rectangle(1063.0, 0.0, 1455.0, 81.0, fill="#DAEBF9", outline="")
 
 # Navigation button: switch page
