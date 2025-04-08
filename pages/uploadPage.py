@@ -154,16 +154,22 @@ class UploadPage(tk.Frame):
 
 
 
-         # File refresh
+        # File refresh button
         refresh_img = scaled_photoimage(str(relative_to_assets("refresh_button.png")), scale_x, scale_y)
         refresh_btn = Button(self, image=refresh_img, borderwidth=0, highlightthickness=0,
                              command=self.refresh_file_list, relief="flat")
         refresh_btn.image = refresh_img
-        refresh_btn.place(x=664.0 * scale_x, y=964.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
+        refresh_btn.place(x=452.0 * scale_x, y=958.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
 
         self.refresh_file_list()
 
 
+         #file confirm Button
+        confirm_img = scaled_photoimage(str(relative_to_assets("confirm_button.png")), scale_x, scale_y)
+        confirm_btn = Button(self, image=confirm_img, borderwidth=0, highlightthickness=0,
+                             command=self.refresh_file_list, relief="flat")
+        confirm_btn.image = confirm_img
+        confirm_btn.place(x=918.0 * scale_x, y=958.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
 
         
         # File upload button: covers a large area, click to trigger upload
