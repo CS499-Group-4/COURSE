@@ -20,7 +20,7 @@ class main:
                       "Dr. Fred Wilcox", "Dr. Cora", "Dr. Keiran", "Dr. Christian", "Dr. Will", 
                       "Dr. Christine", "Dr. Doris", "Dr. Rehan", "Dr. Sahar", "Dr. Aoife", 
                       "Dr. Dawid", "Dr. Alfie", "Dr. Astrid", "Dr. Taya", "Dr. Darcy", "Dr. Ollie", 
-                      "Dr. Velma", "Dr. Sophia", "Dr. Alexandre", "Dr. Maliha Deleon", 
+                      "Dr. Velma", "Dr. Sophia", "Dr. Alexandre", "Dr. Deleon", 
                       "Dr. Dude", "Dr. Broham", "Dr. Guy" ]
     
     preferences = ["Evening classes only", "None", "Morning classes only",
