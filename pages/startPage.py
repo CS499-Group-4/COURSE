@@ -8,7 +8,10 @@ import tkinter.ttk as ttk
 #from tktooltip import ToolTip
 
 #import the generate_scheduler() function from lib/scheduler.py
-from lib.Scheduler import generate_schedule, return_schedule, isScheduleEmpty
+from lib.Scheduler import CourseScheduler
+
+# Instantiate the scheduler
+scheduler = CourseScheduler()
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -33,15 +36,15 @@ def update_treeview():
     global tree
 
     tree.delete(*tree.get_children())
-    for entry in return_schedule():
+    for entry in scheduler.return_schedule():  # Use the scheduler instance
         tree.insert("", "end", values=entry)
 
 
 def runScheduler():
     # Call the generate_schedule() function
     print("Running scheduler...")
-    if isScheduleEmpty():
-        generate_schedule()
+    if scheduler.is_schedule_empty():  # Use the scheduler instance
+        scheduler.generate_schedule()  # Use the scheduler instance
     else:
         pass
     print("Scheduler complete, updating treeview...")
@@ -253,7 +256,7 @@ class StartPage(tk.Frame):
         button_11 = Button(self, image=button_image_11, borderwidth=0, highlightthickness=0,
                            command=lambda: print("button_11 clicked"), relief="flat")
         button_11.image = button_image_11
-        button_11.place(x=1090.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
+        button_11.place(x=1224.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
         #ToolTip(button_11, msg="Push Schedule Changes", delay=1.0)
 
         

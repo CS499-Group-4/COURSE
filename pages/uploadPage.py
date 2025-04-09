@@ -4,7 +4,7 @@ from tkinter.filedialog import askopenfilename
 from pathlib import Path
 from PIL import Image, ImageTk
 import os
-from lib.DatabaseManager import DatabaseManager  # Import the DatabaseManager class
+from lib.DatabaseManager import DatabaseManager, Preference  # Import the DatabaseManager and Preference classes
 from lib.CSV_Parser import parse_csv  # Import the parse_csv function
 from tkinter import messagebox
 #?????????????????????????????????????????????????????????????????????????????????
@@ -115,6 +115,9 @@ class UploadPage(tk.Frame):
                 self.canvas.itemconfigure(self.success_img_id, state='hidden')
                 self.canvas.itemconfigure(self.failed_img_id, state='hidden')
                 self.canvas.itemconfigure(self.uploading_img_id, state='normal')
+                try:
+                    # Parse the CSV file and populate the database
+                    parse_csv(file_path)
 
                 try:
                     os.makedirs("uploads", exist_ok=True)
@@ -138,6 +141,7 @@ class UploadPage(tk.Frame):
                     self.canvas.itemconfigure(self.uploading_img_id, state='hidden')
                     self.canvas.itemconfigure(self.failed_img_id, state='normal')
                     messagebox.showerror("Upload failed", f"Unable to parse the file：\n{e}")
+
 
         self.file_tree = ttk.Treeview(self, columns=("filename", "action"), show="headings", height=8)
         self.file_tree.heading("filename", text="Uploaded Files")

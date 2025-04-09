@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
 #from tktooltip import ToolTip
+from lib.CSV_Exporter import export_schedule_to_csv  # Import the export function
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -103,7 +104,7 @@ class ViewPage(tk.Frame):
         # Export Button
         button_image_6 = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
         button_6 = Button(self, image=button_image_6, borderwidth=0, highlightthickness=0,
-                          command=lambda: print("button_6 clicked"), relief="flat")
+                          command=lambda: self.export_schedule(), relief="flat")  # Bind to export_schedule
         button_6.image = button_image_6
         button_6.place(x=1167.0 * scale_x, y=864.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
         button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
@@ -139,3 +140,12 @@ class ViewPage(tk.Frame):
         for row in self.courses:
             if any(query in str(cell).lower() for cell in row):
                 self.tree.insert("", "end", values=row)
+
+    def export_schedule(self):
+        # Call the export function and specify the output file
+        output_file = "schedule_output.csv"
+        try:
+            export_schedule_to_csv(output_file)
+            print(f"Schedule exported successfully to {output_file}")
+        except Exception as e:
+            print(f"Error exporting schedule: {e}")

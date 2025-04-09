@@ -4,6 +4,7 @@
 
 import csv
 from lib.DatabaseManager import DatabaseManager, Course
+from datetime import datetime
 
 class Faculty:
     def __init__(self, faculty_id, name, courses, preference):
@@ -85,6 +86,29 @@ def parse_csv(file_path):
             preferred_classrooms = [c for c in rows[i][1:] if c]  # Filter out blank spaces
             i += 2  # Skip empty rows
 
+            # Reorder timeslot data based on the preferred times
+            ordered_timeslots = []
+            for preferred_time in preferred_times:
+                if preferred_time == "Morning":
+                    ordered_timeslots += [
+                        {"start_time": start_time, "end_time": end_time}
+                        for start_time, end_time in zip(start_times, end_times)
+                        if datetime.strptime(start_time, "%H:%M") < datetime.strptime("12:00", "%H:%M")
+                        and datetime.strptime(end_time, "%H:%M") <= datetime.strptime("12:00", "%H:%M")
+                    ]
+                elif preferred_time == "Afternoon":
+                    ordered_timeslots += [
+                        {"start_time": start_time, "end_time": end_time}
+                        for start_time, end_time in zip(start_times, end_times)
+                        if datetime.strptime("12:00", "%H:%M") <= datetime.strptime(start_time, "%H:%M") < datetime.strptime("17:00", "%H:%M")
+                        and datetime.strptime(end_time, "%H:%M") <= datetime.strptime("17:00", "%H:%M")
+                    ]
+                elif preferred_time == "Evening":
+                    ordered_timeslots += [
+                        {"start_time": start_time, "end_time": end_time}
+                        for start_time, end_time in zip(start_times, end_times)
+                        if datetime.strptime(start_time, "%H:%M") >= datetime.strptime("17:00", "%H:%M")
+                    ]
             # Create Faculty object
             faculty = Faculty(
                 faculty_id=len(faculty_list) + 1,
@@ -98,7 +122,6 @@ def parse_csv(file_path):
                 }
             )
             faculty_list.append(faculty)
-
             # Add faculty to the database
             db_manager.add_faculty(
                 name=faculty.Name,
@@ -109,7 +132,6 @@ def parse_csv(file_path):
                 class4=faculty.Courses[3] if len(faculty.Courses) > 3 else None,
                 class5=faculty.Courses[4] if len(faculty.Courses) > 4 else None
             )
-
             # Add preferences to the database
             for day in preferred_days:
                 db_manager.add_preference(faculty_name=faculty.Name, preference_type="Day", preference_value=day)
