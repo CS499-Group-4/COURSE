@@ -115,9 +115,9 @@ class UploadPage(tk.Frame):
                 self.canvas.itemconfigure(self.success_img_id, state='hidden')
                 self.canvas.itemconfigure(self.failed_img_id, state='hidden')
                 self.canvas.itemconfigure(self.uploading_img_id, state='normal')
-                try:
-                    # Parse the CSV file and populate the database
-                    parse_csv(file_path)
+                # try:
+                #     # Parse the CSV file and populate the database
+                #     parse_csv(file_path)
 
                 try:
                     os.makedirs("uploads", exist_ok=True)
