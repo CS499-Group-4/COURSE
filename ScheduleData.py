@@ -31,11 +31,21 @@ class main:
     times = ["8:00 AM - 9:20 AM", "9:40 AM - 11:00 AM", "11:20 AM - 12:40 PM", 
              "1:00 PM - 2:20 PM", "2:40 PM - 4:00 PM", "4:20 PM - 5:40 PM",
              "6:00 PM - 7:20 PM", "7:40 PM - 9:00 PM"]
+    
+    rooms = ["101", "102", "103", "104", "105", "106", "107", "108", "109", "110"]
 
     
     prefData = []
+    roomData = []
     # header = ["Professor", "Class 1", "Class 2", "Class 3", "Class 4", "Preferences"]
     # prefData.append(header)
+
+    for _ in range(random.randint(0, 4)):
+        selected_class = random.choice(classNumber)
+        selected_room = random.choice(rooms)
+        row1 = f"{selected_class} must be taught in Technology Hall Room {selected_room}"
+        roomData.append([row1])
+
 
     for prof in professor:
         num_classes = random.randint(1, 4)
@@ -56,14 +66,14 @@ class main:
         writer.writerow(["classNumber:"])
         for i in range(0, len(classNumber), 5):
             writer.writerow(classNumber[i:i+5])
-        #writer.writerow(["professor1:"] + professor1)
-        #writer.writerow(["professor:"] + professor)
+
+        writer.writerow(["\n"])
         writer.writerow(["Classroom Preferences:"])
         writer.writerow(["\n"])
-
+        writer.writerows(roomData)
+        writer.writerow(["\n"])
         writer.writerow(["Faculty Assignments:"])
         writer.writerow(["\n"])
-        writer.writerow(["preferences:"] + preferences)
         #writer.writerow(["day:"] + day)
         #writer.writerow(["times:"] + times)
 
