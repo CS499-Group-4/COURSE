@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
 #from tktooltip import ToolTip
+from lib.DatabaseManager import Schedule, Faculty, Course, Classroom, TimeSlot
 
 #import the generate_scheduler() function from lib/scheduler.py
 from lib.Scheduler import CourseScheduler
@@ -77,7 +78,21 @@ def make_treeview_editable():
         combobox.lift()
 
         # Populate the Combobox with options dynamically based on the column
-        column_values = set(tree.set(child, column_name) for child in tree.get_children())
+        if column_name == "Course ID":
+            column_values = [course.CourseID for course in scheduler.db.get_course()]
+        elif column_name == "Day":
+            # Use a set to remove duplicate days
+            column_values = sorted({timeslot.Days for timeslot in scheduler.db.get_timeslot()})
+        elif column_name == "Time":
+            # Use a set to remove duplicate start times
+            column_values = sorted({timeslot.StartTime for timeslot in scheduler.db.get_timeslot()})
+        elif column_name == "Professor":
+            column_values = [faculty.Name for faculty in scheduler.db.get_faculty()]
+        elif column_name == "Room":
+            column_values = [classroom.RoomID for classroom in scheduler.db.get_classrooms()]
+        else:
+            column_values = []  # Default to an empty list if the column is not recognized
+
         combobox["values"] = sorted(column_values)
 
         # Set the current value in the Combobox
@@ -87,6 +102,29 @@ def make_treeview_editable():
         def on_select(event):
             new_value = combobox.get()
             tree.set(row_id, column_name, new_value)  # Update the Treeview
+
+            # Compare the new value with the database value
+            schedule_entry = scheduler.db.session.query(Schedule).filter(Schedule.Course == item["values"][0]).first()
+            if schedule_entry:
+                db_value = None
+                if column_name == "Day":
+                    timeslot = scheduler.db.session.query(TimeSlot).filter(TimeSlot.SlotID == schedule_entry.TimeSlot).first()
+                    db_value = timeslot.Days if timeslot else None
+                elif column_name == "Time":
+                    timeslot = scheduler.db.session.query(TimeSlot).filter(TimeSlot.SlotID == schedule_entry.TimeSlot).first()
+                    db_value = timeslot.StartTime if timeslot else None
+                elif column_name == "Professor":
+                    professor = scheduler.db.session.query(Faculty).filter(Faculty.FacultyID == schedule_entry.Professor).first()
+                    db_value = professor.Name if professor else None
+                elif column_name == "Room":
+                    db_value = schedule_entry.Classroom
+
+                # Highlight the row if the new value differs from the database value
+                if new_value != db_value:
+                    tree.item(row_id, tags=("edited",))
+                else:
+                    tree.item(row_id, tags=())  # Remove the tag if the value matches the database
+
             combobox.destroy()  # Remove the Combobox
 
         combobox.bind("<<ComboboxSelected>>", on_select)
@@ -113,6 +151,57 @@ def make_treeview_editable():
 
     # Bind the double-click event to the Treeview
     tree.bind("<Double-1>", on_double_click)
+
+    tree.tag_configure("edited", background="yellow")
+
+
+def update_database_from_treeview():
+    print("[INFO] Updating database with Treeview data...")
+    for row in tree.get_children():
+        # Get the values from the Treeview row
+        row_values = tree.item(row, "values")
+        course_id, day, time, professor, room = row_values
+
+        print(f"[INFO] Processing row: Course ID: {course_id}, Day: {day}, Time: {time}, Professor: {professor}, Room: {room}")
+
+        # Update the database
+        schedule_entry = scheduler.db.session.query(Schedule).filter(Schedule.Course == course_id).first()
+        if schedule_entry:
+            # Update the TimeSlot
+            timeslot = scheduler.db.session.query(TimeSlot).filter(
+                TimeSlot.Days == day, TimeSlot.StartTime == time
+            ).first()
+            if timeslot:
+                schedule_entry.TimeSlot = timeslot.SlotID
+                print(f"[INFO] Updated TimeSlot to SlotID {timeslot.SlotID} for Course ID {course_id}.")
+            else:
+                print(f"[WARN] No matching TimeSlot found for Day: {day}, Time: {time}.")
+
+            # Update the Professor
+            professor_entry = scheduler.db.session.query(Faculty).filter(Faculty.Name == professor).first()
+            if professor_entry:
+                schedule_entry.Professor = professor_entry.FacultyID
+                print(f"[INFO] Updated Professor to FacultyID {professor_entry.FacultyID} for Course ID {course_id}.")
+            else:
+                print(f"[WARN] No matching Professor found for Name: {professor}.")
+
+            # Update the Room
+            room_entry = scheduler.db.session.query(Classroom).filter(Classroom.RoomID == room).first()
+            if room_entry:
+                schedule_entry.Classroom = room_entry.RoomID
+                print(f"[INFO] Updated Classroom to RoomID {room_entry.RoomID} for Course ID {course_id}.")
+            else:
+                print(f"[WARN] No matching Room found for RoomID: {room}.")
+
+        else:
+            print(f"[WARN] No matching Schedule entry found for Course ID: {course_id}.")
+
+        # Remove the 'edited' tag from the row
+        tree.item(row, tags=())
+
+    # Commit the changes to the database
+    scheduler.db.safe_commit()
+    print("[INFO] Database update complete.")
 
 
 # ---------------------------
@@ -251,10 +340,16 @@ class StartPage(tk.Frame):
         # #ToolTip(button_10, msg="Back", delay=1.0)
 
         
-        # Update Button
+         # Update Button
         button_image_11 = scaled_photoimage(str(relative_to_assets("button_11.png")), scale_x, scale_y)
-        button_11 = Button(self, image=button_image_11, borderwidth=0, highlightthickness=0,
-                           command=lambda: print("button_11 clicked"), relief="flat")
+        button_11 = Button(
+            self,
+            image=button_image_11,
+            borderwidth=0,
+            highlightthickness=0,
+            command=update_database_from_treeview,  # Call the update function
+            relief="flat"
+        )
         button_11.image = button_image_11
         button_11.place(x=1224.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
         #ToolTip(button_11, msg="Push Schedule Changes", delay=1.0)

@@ -124,7 +124,7 @@ class UploadPage(tk.Frame):
                     target_path = os.path.join("uploads", selected_name)
                     shutil.copy(file_path, target_path)
                     #**************************************************************************************************************************
-                    parse_csv_2(target_path)
+                    parse_csv(target_path)
                     #**************************************************************************************************************************
 
                     # Prompt success
