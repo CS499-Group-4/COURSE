@@ -148,14 +148,14 @@ class ViewPageCourse(tk.Frame):
         self.tree_Course = ttk.Treeview(self, columns=self.columns, show="headings", height=10)
         self.tree_Course.heading("Course ID", text="Course ID")
         self.tree_Course.column("Course ID", width=int(1150 * scale_x), anchor="center")
-        self.tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
+        self.tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
-        self.course_id_entry = Entry(
-            self, bg="#DAEBFA", fg="#0A4578", 
-            font=("Arial", int(18)), relief="flat",
-            insertbackground="#0A4578"
-        )
-        self.course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
+        # self.course_id_entry = Entry(
+        #     self, bg="#DAEBFA", fg="#0A4578", 
+        #     font=("Arial", int(18)), relief="flat",
+        #     insertbackground="#0A4578"
+        # )
+        # self.course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
         def add_course():
             value = self.course_id_entry.get().strip()
             if value:
@@ -169,8 +169,46 @@ class ViewPageCourse(tk.Frame):
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
         btn13.image = btn13_img
-        btn13.place(x=1175.0 * scale_x, y=931.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
+        btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
         
+
+#——————————————————————————————————————————————————
+#          USER add PART
+#——————————————————————————————————————————————————
+
+        canvas.create_rectangle(258.0* scale_x,845.0 * scale_y,1431.0* scale_x, 1032.0 * scale_y, fill="#DAEBFA", outline="")
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Course ID:", fill="#094478", font=("Jomolhari Regular",9))
+        entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry.place(x=375.0 * scale_x, y=860.0 * scale_y, width=(575.0 - 375.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 604.0* scale_x,869.0 * scale_y, anchor="nw", text="Department", fill="#094478", font=("Jomolhari Regular",9))
+        entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry2.place(x=743.0 * scale_x, y=860.0 * scale_y, width=(943.0 - 743.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 970.0* scale_x,869.0 * scale_y, anchor="nw", text="Max/Estimated Enrollment:", fill="#094478", font=("Jomolhari Regular",9))
+        entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry3.place(x=1240.0 * scale_x, y=860.0 * scale_y, width=(1413.0 - 1240.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 307.0* scale_x, 929.0 * scale_y, anchor="nw", text="Required room2", fill="#094478", font=("Jomolhari Regular", 9))
+        entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry4.place(x=285.0 * scale_x, y=968.0 * scale_y, width=(475.0 - 285.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 522.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room3", fill="#094478", font=("Jomolhari Regular", 9))
+        entry5 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry5.place(x=500.0 * scale_x, y=968.0 * scale_y, width=(690.0 - 500.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 738.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room4", fill="#094478", font=("Jomolhari Regular", 9))
+        entry6 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry6.place(x=716.0 * scale_x, y=968.0 * scale_y, width=(906.0 - 716.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 965.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room5", fill="#094478", font=("Jomolhari Regular", 9))
+        entry7 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry7.place(x=943.0 * scale_x, y=968.0 * scale_y, width=(1133.0 - 943.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+
+
+
+
 
                 
     def load_courses_from_file(self, file_path):

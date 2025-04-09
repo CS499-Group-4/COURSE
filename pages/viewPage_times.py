@@ -147,15 +147,15 @@ class ViewPageTimes(tk.Frame):
         self.tree_Time.heading("Time", text="Time")
         self.tree_Time.column("Time", width=int(350 * scale_x), anchor="center")
         self.tree_Time.insert("", "end", values=("MW 09:40-11:00",))
-        self.tree_Time.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
+        self.tree_Time.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
-        self.Time_entry = Entry(
-            self, bg="#DAEBFA", fg="#0A4578", 
-            font=("Arial", int(18)), 
-            relief="flat",
-            insertbackground="#0A4578"
-        )
-        self.Time_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
+        # self.Time_entry = Entry(
+        #     self, bg="#DAEBFA", fg="#0A4578", 
+        #     font=("Arial", int(18)), 
+        #     relief="flat",
+        #     insertbackground="#0A4578"
+        # )
+        # self.Time_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
 
         def add_time():
             value = self.Time_entry.get().strip()
@@ -175,7 +175,32 @@ class ViewPageTimes(tk.Frame):
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_time)
         btn13.image = btn13_img
-        btn13.place(x=1175.0 * scale_x, y=931.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
+        btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
+
+
+
+#——————————————————————————————————————————————————
+#          USER add PART
+#——————————————————————————————————————————————————
+
+        canvas.create_rectangle(258.0* scale_x,845.0 * scale_y,1431.0* scale_x, 1032.0 * scale_y, fill="#DAEBFA", outline="")
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text(  277.0* scale_x,  873.0 * scale_y, anchor="nw", text="Days   ：", fill="#094478", font=("Jomolhari Regular",9))
+        entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry.place(x=401.0 * scale_x, y=864.0 * scale_y, width=260 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 277.0* scale_x,973.0 * scale_y, anchor="nw", text="Start Time：", fill="#094478", font=("Jomolhari Regular",9))
+        entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry2.place(x=401.0 * scale_x, y=965.0 * scale_y, width=260 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 727.0* scale_x,974.0 * scale_y, anchor="nw", text="End Time：", fill="#094478", font=("Jomolhari Regular",9))
+        entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry3.place(x=844.0 * scale_x, y=965.0 * scale_y, width=260 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 
     def load_times_from_file(self, file_path):

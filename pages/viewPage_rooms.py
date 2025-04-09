@@ -148,14 +148,14 @@ class ViewPageRooms(tk.Frame):
         self.tree_Rooms.heading("Rooms", text="Rooms")
         self.tree_Rooms.column("Rooms", width=int(350 * scale_x), anchor="center")
         self.tree_Rooms.insert("", "end", values=("OKT346",))
-        self.tree_Rooms.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=800.0 * scale_y)
+        self.tree_Rooms.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
-        self.Rooms_entry = Entry(
-            self, bg="#DAEBFA", fg="#0A4578",
-            font=("Arial", int(18)), relief="flat",
-            insertbackground="#0A4578"
-        )
-        self.Rooms_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
+        # self.Rooms_entry = Entry(
+        #     self, bg="#DAEBFA", fg="#0A4578",
+        #     font=("Arial", int(18)), relief="flat",
+        #     insertbackground="#0A4578"
+        # )
+        # self.Rooms_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
 
         def add_room():
             value = self.Rooms_entry.get().strip()
@@ -176,7 +176,37 @@ class ViewPageRooms(tk.Frame):
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_room)
         btn13.image = btn13_img
-        btn13.place(x=1175.0 * scale_x, y=931.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
+        btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
+
+
+
+#——————————————————————————————————————————————————
+#          USER add PART
+#——————————————————————————————————————————————————
+
+        canvas.create_rectangle(258.0* scale_x,845.0 * scale_y,1431.0* scale_x, 1032.0 * scale_y, fill="#DAEBFA", outline="")
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Room ID：", fill="#094478", font=("Jomolhari Regular",9))
+        entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry.place(x=408.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 745.0* scale_x,869.0 * scale_y, anchor="nw", text="Capacity：", fill="#094478", font=("Jomolhari Regular",9))
+        entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry2.place(x=851.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 270.0* scale_x,970.0 * scale_y, anchor="nw", text="Department：", fill="#094478", font=("Jomolhari Regular",9))
+        entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry3.place(x=408.0 * scale_x, y=959.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 745.0* scale_x, 970.0 * scale_y, anchor="nw", text="Building：", fill="#094478", font=("Jomolhari Regular", 9))
+        entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry4.place(x=851.0 * scale_x, y=961.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+       
+
+
+
+
 
 
     def load_rooms_from_file(self, file_path):

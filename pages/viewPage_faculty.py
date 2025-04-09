@@ -150,22 +150,58 @@ class ViewPageFaculty(tk.Frame):
         self.tree_Faculty.column("Faculty", width=int(350 * scale_x), anchor="center")
         self.tree_Faculty.insert("", "end", values=("Dr. Smith",))
         self.tree_Faculty.place(x=271.0 * scale_x, y=124.0 * scale_y,
-                                width=1150.0 * scale_x, height=800.0 * scale_y)
+                                width=1150.0 * scale_x, height=700.0 * scale_y)
 
-        self.Faculty_entry = Entry(
-            self, bg="#DAEBFA", fg="#0A4578",
-            font=("Arial", int(18)), relief="flat",
-            insertbackground="#0A4578"
-        )
-        self.Faculty_entry.place(x=274.0 * scale_x, y=937.0 * scale_y,
-                                   width=850.0 * scale_x, height=80.0 * scale_y)
+        # self.Faculty_entry = Entry(
+        #     self, bg="#DAEBFA", fg="#0A4578",
+        #     font=("Arial", int(18)), relief="flat",
+        #     insertbackground="#0A4578"
+        # )
+        # self.Faculty_entry.place(x=274.0 * scale_x, y=937.0 * scale_y,
+        #                            width=850.0 * scale_x, height=80.0 * scale_y)
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0,
                        command=self.add_faculty)
         btn13.image = btn13_img
-        btn13.place(x=1175.0 * scale_x, y=931.0 * scale_y,
-                    width=200.0 * scale_x, height=101.0 * scale_y)
+        btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
+
+
+#——————————————————————————————————————————————————
+#          USER add PART
+#——————————————————————————————————————————————————
+
+        canvas.create_rectangle(258.0* scale_x,845.0 * scale_y,1431.0* scale_x, 1032.0 * scale_y, fill="#DAEBFA", outline="")
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Name :", fill="#094478", font=("Jomolhari Regular",9))
+        entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry.place(x=375.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 830.0* scale_x,869.0 * scale_y, anchor="nw", text="Relative Priority (>= 0):", fill="#094478", font=("Jomolhari Regular",9))
+        entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry2.place(x=1062.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 324.0* scale_x,936.0 * scale_y, anchor="nw", text="Class ID 1", fill="#094478", font=("Jomolhari Regular",9))
+        entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry3.place(x=280.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 559.0* scale_x, 936.0 * scale_y, anchor="nw", text="Class ID 2", fill="#094478", font=("Jomolhari Regular", 9))
+        entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry4.place(x=515.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 794.0* scale_x,936.0 * scale_y, anchor="nw", text="Class ID 3", fill="#094478", font=("Jomolhari Regular", 9))
+        entry5 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry5.place(x=750.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text( 1029.0* scale_x,936.0 * scale_y, anchor="nw", text="Class ID 4", fill="#094478", font=("Jomolhari Regular", 9))
+        entry6 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        entry6.place(x=985.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        #----------------------------------------------------------------------------------------------------------------
+
+
+
+
+
 
     # -----------------------------
     # Add Faculty to DB + UI
