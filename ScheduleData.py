@@ -59,7 +59,7 @@ class main:
         writer = csv.writer(file)
         
 
-        writer.writerow(["Location: OKT"])
+        writer.writerow(["Location: Technology Hall"])
         writer.writerow(["Courses Offered:"])
         writer.writerow(["\n"])
 
