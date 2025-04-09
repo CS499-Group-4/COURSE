@@ -158,20 +158,45 @@ class ViewPageRooms(tk.Frame):
         # self.Rooms_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
 
         def add_room():
-            value = self.Rooms_entry.get().strip()
-            if value:
-                db = DatabaseManager()
-                db.start_session()
-                db.add_classroom(
-                    room_id=value,
-                    department="Manual",
-                    building="Unknown",
-                    room=value,
-                    capacity=0
-                )
-                db.end_session()
-                self.tree_Rooms.insert("", "end", values=(value,))
-                self.Rooms_entry.delete(0, "end")
+            # Retrieve values from the input fields
+            room_id = entry.get().strip()
+            capacity = entry2.get().strip()
+            department = entry3.get().strip()
+            building = entry4.get().strip()
+
+            # Ensure all fields are filled
+            if room_id and capacity and department and building:
+                try:
+                    # Convert capacity to an integer
+                    capacity = int(capacity)
+
+                    # Add the room to the database
+                    db = DatabaseManager()
+                    db.start_session()
+                    db.add_classroom(
+                        room_id=room_id,
+                        department=department,
+                        building=building,
+                        room=room_id,
+                        capacity=capacity
+                    )
+                    db.end_session()
+
+                    # Add the room to the Treeview
+                    self.tree_Rooms.insert("", "end", values=(room_id,))
+
+                    # Clear the input fields
+                    entry.delete(0, "end")
+                    entry2.delete(0, "end")
+                    entry3.delete(0, "end")
+                    entry4.delete(0, "end")
+                except ValueError:
+                    print("Capacity must be a valid integer.")
+                except Exception as e:
+                    print(f"Error adding room: {e}")
+            else:
+                print("Please fill in all required fields (Room ID, Capacity, Department, and Building).")
+
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_room)

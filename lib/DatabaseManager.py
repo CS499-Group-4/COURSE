@@ -120,6 +120,25 @@ class DatabaseManager:
         self.session.add(faculty)
         self.safe_commit()
 
+    #Function for adding entry for faculty for the ui button
+    def add_faculty_ui(self, name, priority, class_ids=None):
+        # Ensure class_ids is a list and pad it to match the number of class columns
+        class_ids = class_ids or []  # Default to an empty list if None
+        class_ids = (class_ids + [None] * 5)[:5]  # Pad with None to ensure exactly 5 elements
+
+        # Map the list elements to the respective class columns
+        faculty = Faculty(
+            Name=name,
+            Priority=priority,
+            Class1=class_ids[0],
+            Class2=class_ids[1],
+            Class3=class_ids[2],
+            Class4=class_ids[3],
+            Class5=class_ids[4]
+        )
+        self.session.add(faculty)
+        self.safe_commit()
+
     # Add preferences to the database
     def add_preference(self, faculty_name, preference_type, preference_value):
         #return the facultyID from entry where name = faculty_name

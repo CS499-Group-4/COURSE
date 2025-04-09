@@ -157,14 +157,45 @@ class ViewPageCourse(tk.Frame):
         # )
         # self.course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
         def add_course():
-            value = self.course_id_entry.get().strip()
-            if value:
-                db = DatabaseManager()
-                db.start_session()
-                db.add_course(course_id=value, department="Manual", max_enrollment=0)
-                db.end_session()
-                self.tree_Course.insert("", "end", values=(value,))
-                self.course_id_entry.delete(0, "end")
+            course_id = entry.get().strip()
+            department = entry2.get().strip()
+            max_enrollment = entry3.get().strip()
+            required_room1 = entry4.get().strip()
+            required_room2 = entry5.get().strip()
+            required_room3 = entry6.get().strip()
+            required_room4 = entry7.get().strip()
+
+            if course_id and department and max_enrollment:
+                try:
+                    db = DatabaseManager()
+                    db.start_session()
+                    db.add_course(
+                        course_id=course_id,
+                        department=department,
+                        max_enrollment=int(max_enrollment),  # Convert to integer if needed
+                        #include required rooms if there are any 
+                        req_room1=required_room1 if required_room1 else None,
+                        req_room2=required_room2 if required_room2 else None,
+                        req_room3=required_room3 if required_room3 else None,
+                        req_room4=required_room4 if required_room4 else None
+                    )
+                    db.end_session()
+
+                    # Add the course to the Treeview
+                    self.tree_Course.insert("", "end", values=(course_id,))
+                    
+                    # Clear the entry fields
+                    entry.delete(0, "end")
+                    entry2.delete(0, "end")
+                    entry3.delete(0, "end")
+                    entry4.delete(0, "end")
+                    entry5.delete(0, "end")
+                    entry6.delete(0, "end")
+                    entry7.delete(0, "end")
+                except Exception as e:
+                    print(f"Error adding course: {e}")
+            else:
+                print("Please fill in all required fields.")
         # add
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
@@ -190,19 +221,19 @@ class ViewPageCourse(tk.Frame):
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=1240.0 * scale_x, y=860.0 * scale_y, width=(1413.0 - 1240.0) * scale_x, height=(910.0 - 860.0) * scale_y)
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text( 307.0* scale_x, 929.0 * scale_y, anchor="nw", text="Required room2", fill="#094478", font=("Jomolhari Regular", 9))
+        canvas.create_text( 307.0* scale_x, 929.0 * scale_y, anchor="nw", text="Required room 1", fill="#094478", font=("Jomolhari Regular", 9))
         entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry4.place(x=285.0 * scale_x, y=968.0 * scale_y, width=(475.0 - 285.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text( 522.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room3", fill="#094478", font=("Jomolhari Regular", 9))
+        canvas.create_text( 522.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 2", fill="#094478", font=("Jomolhari Regular", 9))
         entry5 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry5.place(x=500.0 * scale_x, y=968.0 * scale_y, width=(690.0 - 500.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text( 738.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room4", fill="#094478", font=("Jomolhari Regular", 9))
+        canvas.create_text( 738.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 3", fill="#094478", font=("Jomolhari Regular", 9))
         entry6 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry6.place(x=716.0 * scale_x, y=968.0 * scale_y, width=(906.0 - 716.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text( 965.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room5", fill="#094478", font=("Jomolhari Regular", 9))
+        canvas.create_text( 965.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 4", fill="#094478", font=("Jomolhari Regular", 9))
         entry7 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry7.place(x=943.0 * scale_x, y=968.0 * scale_y, width=(1133.0 - 943.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
 

@@ -158,19 +158,33 @@ class ViewPageTimes(tk.Frame):
         # self.Time_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
 
         def add_time():
-            value = self.Time_entry.get().strip()
-            try:
-                if value and " " in value and "-" in value:
-                    day, time_range = value.split(" ")
-                    start, end = time_range.split("-")
+            # Retrieve values from the input fields
+            days = entry.get().strip()
+            start_time = entry2.get().strip()
+            end_time = entry3.get().strip()
+
+            # Ensure all fields are filled
+            if days and start_time and end_time:
+                try:
+                    # Add the timeslot to the database
                     db = DatabaseManager()
                     db.start_session()
-                    db.add_timeslot(day, start, end)
+                    db.add_timeslot(days=days, start_time=start_time, end_time=end_time)
                     db.end_session()
-                    self.tree_Time.insert("", "end", values=(value,))
-                    self.Time_entry.delete(0, "end")
-            except Exception as e:
-                print(f"Failed to add time: {e}")
+
+                    # Add the timeslot to the Treeview
+                    time_str = f"{days} {start_time}-{end_time}"
+                    self.tree_Time.insert("", "end", values=(time_str,))
+
+                    # Clear the input fields
+                    entry.delete(0, "end")
+                    entry2.delete(0, "end")
+                    entry3.delete(0, "end")
+                except Exception as e:
+                    print(f"Error adding timeslot: {e}")
+            else:
+                print("Please fill in all required fields (Days, Start Time, and End Time).")
+
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_time)

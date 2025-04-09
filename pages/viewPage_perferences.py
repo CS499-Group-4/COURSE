@@ -155,16 +155,33 @@ class ViewPagePreference(tk.Frame):
         #     insertbackground="#0A4578"
         # )
         # self.Perferences_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
-
         def add_preference():
-            value = self.Perferences_entry.get().strip()
-            if value:
-                db = DatabaseManager()
-                db.start_session()
-                db.add_preference(name="ManualEntry", pref_type="Custom", value=value)
-                db.end_session()
-                self.tree_Perferences.insert("", "end", values=(value,))
-                self.Perferences_entry.delete(0, "end")
+            # Retrieve values from the input fields
+            name = entry.get().strip()
+            preference_type = dropdown_preference.get().strip()
+            preference_value = entry3.get().strip()
+
+            # Ensure all fields are filled
+            if name and preference_type != "Select Type" and preference_value:
+                try:
+                    # Add the preference to the database
+                    db = DatabaseManager()
+                    db.start_session()
+                    db.add_preference(faculty_name=name, preference_type=preference_type, preference_value=preference_value)
+                    db.end_session()
+
+                    # Add the preference to the Treeview
+                    self.tree_Perferences.insert("", "end", values=(f"{name} - {preference_type}: {preference_value}",))
+
+                    # Clear the input fields
+                    entry.delete(0, "end")
+                    dropdown_preference.set("Select Type")
+                    entry3.delete(0, "end")
+                except Exception as e:
+                    print(f"Error adding preference: {e}")
+            else:
+                print("Please fill in all required fields (Name, Preference Type, and Preference).")
+
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_preference)

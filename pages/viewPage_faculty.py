@@ -160,9 +160,47 @@ class ViewPageFaculty(tk.Frame):
         # self.Faculty_entry.place(x=274.0 * scale_x, y=937.0 * scale_y,
         #                            width=850.0 * scale_x, height=80.0 * scale_y)
 
+        def add_faculty():
+            name = entry.get().strip()  # Name field
+            priority = entry2.get().strip()  # Priority field
+            class_id1 = entry3.get().strip()  # Class ID 1
+            class_id2 = entry4.get().strip()  # Class ID 2 (optional)
+            class_id3 = entry5.get().strip()  # Class ID 3 (optional)
+            class_id4 = entry6.get().strip()  # Class ID 4 (optional)
+
+            # Ensure required fields are filled
+            if name and class_id1:
+                try:
+                    # Default priority to 0 if not provided
+                    priority = int(priority) if priority else 0
+
+                    # Collect all class IDs and filter out empty ones
+                    class_ids = [class_id for class_id in [class_id1, class_id2, class_id3, class_id4] if class_id]
+
+                    # Add faculty to the database
+                    db = DatabaseManager()
+                    db.start_session()
+                    db.add_faculty_ui(name=name, priority=priority, class_ids=class_ids)
+                    db.end_session()
+
+                    # Add the faculty to the Treeview
+                    self.tree_Faculty.insert("", "end", values=(name,))
+
+                    # Clear the entry fields
+                    entry.delete(0, "end")
+                    entry2.delete(0, "end")
+                    entry3.delete(0, "end")
+                    entry4.delete(0, "end")
+                    entry5.delete(0, "end")
+                    entry6.delete(0, "end")
+                except Exception as e:
+                    print(f"Error adding faculty: {e}")
+            else:
+                print("Please fill in all required fields (Name and Class ID 1).")
+
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0,
-                       command=self.add_faculty)
+                       command=add_faculty)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
 
