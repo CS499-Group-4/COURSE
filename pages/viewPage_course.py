@@ -31,6 +31,7 @@ def scaled_photoimage(image_path: str, scale_x: float, scale_y: float) -> ImageT
 # View Page: Frame 4
 # ---------------------------
 class ViewPageCourse(tk.Frame):
+
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
@@ -49,7 +50,11 @@ class ViewPageCourse(tk.Frame):
         canvas.create_rectangle(0.0, 1.0, 235.0* scale_x, 1042.0, fill="#79BCF7", outline="")
 
 
-      
+        
+    # def load_courses_from_file_if_applicable(self):
+    #     if hasattr(self.controller, "selected_file_path"):
+    #         self.load_courses_from_file(self.controller.selected_file_path)
+        
         # Navigation button: switch page
        # ----------------------------HomePage------------------------------------------
         btn5_img = scaled_photoimage(str(relative_to_assets("button_5.png")), scale_x, scale_y)
@@ -143,11 +148,12 @@ class ViewPageCourse(tk.Frame):
 #———————————————————————————————————————————————————————
 #                           TABLE
 #———————————————————————————————————————————————————————
-        self.columns = ("Course ID",)
+        self.columns = ("Course ID", "Department", "Max Enroll", "Room1", "Room2", "Room3", "Room4", "Room5")
         # 创建 Treeview 表格
         self.tree_Course = ttk.Treeview(self, columns=self.columns, show="headings", height=10)
-        self.tree_Course.heading("Course ID", text="Course ID")
-        self.tree_Course.column("Course ID", width=int(1150 * scale_x), anchor="center")
+        for col in self.columns:
+            self.tree_Course.heading(col, text=col)
+            self.tree_Course.column(col, width=int(1150 * scale_x)//len(self.columns), anchor="center")
         self.tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
         # self.course_id_entry = Entry(
@@ -157,6 +163,7 @@ class ViewPageCourse(tk.Frame):
         # )
         # self.course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
         def add_course():
+            print("Add course button clicked")
             course_id = entry.get().strip()
             department = entry2.get().strip()
             max_enrollment = entry3.get().strip()
@@ -237,28 +244,29 @@ class ViewPageCourse(tk.Frame):
         entry7 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry7.place(x=943.0 * scale_x, y=968.0 * scale_y, width=(1133.0 - 943.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
 
-
-
-
-
                 
-    def load_courses_from_file(self, file_path):
-        try:
-            _, _, course_data, _, _ = parse_csv_2(file_path, insert_into_db=False)
-            self.tree_Course.delete(*self.tree_Course.get_children())
-            for course in course_data:
-                self.tree_Course.insert("", "end", values=(course["course_id"],))
-        except Exception as e:
-            print(f"Error loading course data: {e}")
+    def update_treeview(self):
+        # Clear the existing data in the Treeview
+        for item in self.tree_Course.get_children():
+            self.tree_Course.delete(item)
+
+        # Fetch and display the courses from the database
+        db = DatabaseManager()
+        db.start_session()
+        courses = db.get_course()
+        db.end_session()
+
+        for course in courses:
+            self.tree_Course.insert("", "end", values=(course.CourseID,course.Department,course.MaxEnrollment,course.ReqRoom1,course.ReqRoom2,course.ReqRoom3,course.ReqRoom4,course.ReqRoom5))
                 
     def tkraise(self, *args, **kwargs):
+        print("ViewPage_Course raised")
         super().tkraise(*args, **kwargs)
-        if hasattr(self.controller, "selected_file_path"):
-            self.load_courses_from_file(self.controller.selected_file_path)
+        self.update_treeview()
 
 
 
-        
+
 
 
 
