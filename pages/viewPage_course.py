@@ -155,7 +155,7 @@ class ViewPageCourse(tk.Frame):
             self.tree_Course.column(col, width=int(1150 * scale_x)//len(self.columns), anchor="center")
         self.tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
         
-
+        self.tree_Course.bind("<Button-3>", self.show_context_menu)
 
         # self.course_id_entry = Entry(
         #     self, bg="#DAEBFA", fg="#0A4578", 
@@ -180,8 +180,7 @@ class ViewPageCourse(tk.Frame):
                     db.add_course(
                         course_id=course_id,
                         department=department,
-                        max_enrollment=int(max_enrollment),  # Convert to integer if needed
-                        #include required rooms if there are any 
+                        max_enrollment=int(max_enrollment),  # Convert as needed
                         req_room1=required_room1 if required_room1 else None,
                         req_room2=required_room2 if required_room2 else None,
                         req_room3=required_room3 if required_room3 else None,
@@ -189,9 +188,9 @@ class ViewPageCourse(tk.Frame):
                     )
                     db.end_session()
 
-                    # Add the course to the Treeview
-                    self.tree_Course.insert("", "end", values=(course_id,))
-                    
+                    # Refresh the Course treeview after DB insertion
+                    self.update_treeview()
+
                     # Clear the entry fields
                     entry.delete(0, "end")
                     entry2.delete(0, "end")
@@ -258,21 +257,42 @@ class ViewPageCourse(tk.Frame):
         self.tree_Course.heading(col, command=lambda: self.sort_treeview(col, not reverse))
                 
     def update_treeview(self):
-        # Clear the existing data in the Treeview
         for item in self.tree_Course.get_children():
             self.tree_Course.delete(item)
-
-        # Fetch and display the courses from the database
         db = DatabaseManager()
         db.start_session()
         courses = db.get_course()
         db.end_session()
-
         for course in courses:
-            self.tree_Course.insert("", "end", values=(course.CourseID,course.Department,course.MaxEnrollment,course.ReqRoom1,course.ReqRoom2,course.ReqRoom3,course.ReqRoom4,course.ReqRoom5))
-                
+            self.tree_Course.insert("", "end", iid=course.CourseID, values=(
+                course.CourseID,
+                course.Department,
+                course.MaxEnrollment,
+                course.ReqRoom1,
+                course.ReqRoom2,
+                course.ReqRoom3,
+                course.ReqRoom4,
+                course.ReqRoom5
+            ))
+    
+    def show_context_menu(self, event):
+        item = self.tree_Course.identify_row(event.y)
+        if item:
+            menu = tk.Menu(self, tearoff=0)
+            menu.add_command(label="Delete", command=lambda: self.delete_item(item))
+            menu.post(event.x_root, event.y_root)
+    
+    def delete_item(self, course_id):
+        try:
+            db = DatabaseManager()
+            db.start_session()
+            db.delete_course(course_id)  # Implement delete_course in DatabaseManager
+            db.end_session()
+            self.update_treeview()
+        except Exception as e:
+            print(f"Error deleting course: {e}")
+
     def tkraise(self, *args, **kwargs):
-        print("ViewPage_Course raised")
         super().tkraise(*args, **kwargs)
         self.update_treeview()
 

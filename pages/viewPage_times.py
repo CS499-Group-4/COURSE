@@ -142,40 +142,33 @@ class ViewPageTimes(tk.Frame):
 #                           TABLE
 #———————————————————————————————————————————————————————
 
-        self.columns3 = ("Time",)
-        self.tree_Time = ttk.Treeview(self, columns=self.columns3, show="headings", height=1)
-        self.tree_Time.heading("Time", text="Time")
-        self.tree_Time.column("Time", width=int(350 * scale_x), anchor="center")
-        self.tree_Time.insert("", "end", values=("MW 09:40-11:00",))
+        # Replace the old single-column treeview with a multi-column treeview that doesn't show the SlotID
+        self.columns_times = ("Days", "Start Time", "End Time")
+        self.tree_Time = ttk.Treeview(self, columns=self.columns_times, show="headings", height=10)
+        for col in self.columns_times:
+            self.tree_Time.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
+            self.tree_Time.column(col, width=int(1150 * scale_x)//len(self.columns_times), anchor="center")
         self.tree_Time.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
-
-        # self.Time_entry = Entry(
-        #     self, bg="#DAEBFA", fg="#0A4578", 
-        #     font=("Arial", int(18)), 
-        #     relief="flat",
-        #     insertbackground="#0A4578"
-        # )
-        # self.Time_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
-
+        
+        # Update the add_time function to call update_treeview after DB insertion
         def add_time():
             # Retrieve values from the input fields
             days = entry.get().strip()
             start_time = entry2.get().strip()
             end_time = entry3.get().strip()
-
+    
             # Ensure all fields are filled
-            if days and start_time and end_time:
+            if (days and start_time and end_time):
                 try:
                     # Add the timeslot to the database
                     db = DatabaseManager()
                     db.start_session()
                     db.add_timeslot(days=days, start_time=start_time, end_time=end_time)
                     db.end_session()
-
-                    # Add the timeslot to the Treeview
-                    time_str = f"{days} {start_time}-{end_time}"
-                    self.tree_Time.insert("", "end", values=(time_str,))
-
+    
+                    # Refresh the treeview after DB insertion
+                    self.update_treeview()
+    
                     # Clear the input fields
                     entry.delete(0, "end")
                     entry2.delete(0, "end")
@@ -184,14 +177,11 @@ class ViewPageTimes(tk.Frame):
                     print(f"Error adding timeslot: {e}")
             else:
                 print("Please fill in all required fields (Days, Start Time, and End Time).")
-
-
+    
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_time)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
-
-
 
 #——————————————————————————————————————————————————
 #          USER add PART
@@ -212,25 +202,68 @@ class ViewPageTimes(tk.Frame):
         entry3.place(x=844.0 * scale_x, y=965.0 * scale_y, width=260 * scale_x, height=50 * scale_y)
         #----------------------------------------------------------------------------------------------------------------
 
+        self.tree_Time.bind("<Button-3>", self.show_context_menu)
 
+    # In update_treeview, store the SlotID as the item iid:
+    def update_treeview(self):
+        # Clear the existing data in the Treeview
+        for item in self.tree_Time.get_children():
+            self.tree_Time.delete(item)
 
+        # Fetch timeslots from the database and populate the treeview
+        db = DatabaseManager()
+        db.start_session()
+        timeslots = db.get_timeslot()
+        db.end_session()
 
+        for slot in timeslots:
+            # Use slot.SlotID as the iid (hidden, not shown in columns)
+            self.tree_Time.insert("", "end", iid=slot.SlotID, values=(
+                slot.Days,
+                slot.StartTime,
+                slot.EndTime
+            ))
 
+    # Add these methods for the right-click deletion:
+    def show_context_menu(self, event):
+        # Identify the row under the pointer
+        item = self.tree_Time.identify_row(event.y)
+        if item:
+            # Create a context menu
+            menu = tk.Menu(self, tearoff=0)
+            menu.add_command(label="Delete", command=lambda: self.delete_item(item))
+            menu.post(event.x_root, event.y_root)
 
-    def load_times_from_file(self, file_path):
+    def delete_item(self, item):
+        vals = self.tree_Time.item(item, 'values')  # (Days, Start Time, End Time)
+        if not vals or len(vals) < 3:
+            print("Cannot determine timeslot details.")
+            return
+        days, start_time, end_time = vals[0], vals[1], vals[2]
         try:
-            _, _, _, timeslot_data, _ = parse_csv_2(file_path, insert_into_db=False)
-            self.tree_Time.delete(*self.tree_Time.get_children())
-            for slot in timeslot_data:
-                time_str = f"{slot['day']} {slot['start_time']}-{slot['end_time']}"
-                self.tree_Time.insert("", "end", values=(time_str,))
+            db = DatabaseManager()
+            db.start_session()
+            db.delete_timeslot_by_values(days, start_time, end_time)
+            db.end_session()
+            self.update_treeview()
         except Exception as e:
-            print(f"Error loading time data: {e}")
+            print(f"Error deleting timeslot: {e}")
+
+    def sort_treeview(self, col, reverse):
+        # Get values and item ids from treeview
+        l = [(self.tree_Time.set(k, col), k) for k in self.tree_Time.get_children('')]
+        try:
+            l.sort(key=lambda t: float(t[0]) if t[0].replace('.','',1).isdigit() else t[0], reverse=reverse)
+        except Exception:
+            l.sort(reverse=reverse)
+        for index, (val, k) in enumerate(l):
+            self.tree_Time.move(k, '', index)
+        self.tree_Time.heading(col, command=lambda: self.sort_treeview(col, not reverse))
+
 
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
-        if hasattr(self.controller, "selected_file_path"):
-            self.load_times_from_file(self.controller.selected_file_path)
+        self.update_treeview()
 
 
 
