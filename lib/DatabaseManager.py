@@ -227,6 +227,10 @@ class DatabaseManager:
     def get_conflictGroup(self):
         return self.session.query(ConflictGroup).all()
     
+    def get_preferences(self):
+        return self.session.query(Faculty.Name, Preference.PreferenceType, Preference.PreferenceValue)\
+                    .join(Faculty, Faculty.FacultyID == Preference.FacultyID).all()
+
 
 # # Example usage
 # if __name__ == "__main__":
