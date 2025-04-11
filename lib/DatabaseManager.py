@@ -208,6 +208,73 @@ class DatabaseManager:
         self.session.add(schedule)
         self.safe_commit()
 
+    def delete_timeslot(self, slot_id):
+        timeslot = self.session.query(TimeSlot).filter_by(SlotID=slot_id).first()
+        if timeslot:
+            self.session.delete(timeslot)
+            self.safe_commit()
+
+    def delete_timeslot_by_values(self, days, start_time, end_time):
+        timeslot = self.session.query(TimeSlot).filter_by(
+            Days=days, StartTime=start_time, EndTime=end_time
+        ).first()
+        if timeslot:
+            self.session.delete(timeslot)
+            self.safe_commit()
+
+    def delete_faculty(self, faculty_id):
+        faculty = self.session.query(Faculty).filter_by(FacultyID=faculty_id).first()
+        if faculty:
+            self.session.delete(faculty)
+            self.safe_commit()
+
+    def delete_faculty_by_values(self, name, priority, class1, class2, class3, class4, class5):
+        faculty = self.session.query(Faculty).filter_by(
+            Name=name,
+            Priority=priority,
+            Class1=class1,
+            Class2=class2,
+            Class3=class3,
+            Class4=class4,
+            Class5=class5
+        ).first()
+        if faculty:
+            self.session.delete(faculty)
+            self.safe_commit()
+
+    def delete_course(self, course_id):
+        course = self.session.query(Course).filter_by(CourseID=course_id).first()
+        if course:
+            self.session.delete(course)
+            self.safe_commit()
+
+    def delete_preference(self, preference_id):
+        preference = self.session.query(Preference).filter_by(PreferenceID=preference_id).first()
+        if preference:
+            self.session.delete(preference)
+            self.safe_commit()
+
+    def delete_preference_by_values(self, faculty_name, pref_type, pref_value):
+        # First, lookup the FacultyID for the given name:
+        faculty = self.session.query(Faculty).filter_by(Name=faculty_name).first()
+        if not faculty:
+            print(f"[WARN] No faculty found with the name {faculty_name}.")
+            return
+        preference = self.session.query(Preference).filter_by(
+            FacultyID=faculty.FacultyID,
+            PreferenceType=pref_type,
+            PreferenceValue=pref_value
+        ).first()
+        if preference:
+            self.session.delete(preference)
+            self.safe_commit()
+
+    def delete_classroom(self, room_id):
+        classroom = self.session.query(Classroom).filter_by(RoomID=room_id).first()
+        if classroom:
+            self.session.delete(classroom)
+            self.safe_commit()
+
     # Simple query functions
     def get_faculty(self):
         return self.session.query(Faculty).all()
@@ -228,8 +295,12 @@ class DatabaseManager:
         return self.session.query(ConflictGroup).all()
     
     def get_preferences(self):
-        return self.session.query(Faculty.Name, Preference.PreferenceType, Preference.PreferenceValue)\
-                    .join(Faculty, Faculty.FacultyID == Preference.FacultyID).all()
+        return self.session.query(
+            Faculty.Name.label("ProfessorName"),
+            Preference.PreferenceType.label("PreferenceType"),
+            Preference.PreferenceValue.label("PreferenceValue")
+        ).join(Faculty, Faculty.FacultyID == Preference.FacultyID).all()
+
 
 
 # # Example usage

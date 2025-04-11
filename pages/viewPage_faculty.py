@@ -151,34 +151,29 @@ class ViewPageFaculty(tk.Frame):
             self.tree_Faculty.column(col, width=int(1150 * scale_x)//len(self.columns4), anchor="center")
         self.tree_Faculty.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
         
+        self.tree_Faculty.bind("<Button-3>", self.show_context_menu)
 
 
 
         def add_faculty():
-            name = entry.get().strip()  # Name field
-            priority = entry2.get().strip()  # Priority field
-            class_id1 = entry3.get().strip()  # Class ID 1
-            class_id2 = entry4.get().strip()  # Class ID 2 (optional)
-            class_id3 = entry5.get().strip()  # Class ID 3 (optional)
-            class_id4 = entry6.get().strip()  # Class ID 4 (optional)
+            name = entry.get().strip()        # Adjust to reference the proper Name entry
+            priority = entry2.get().strip()     # And any other values if needed
+            class_id1 = entry3.get().strip()
+            class_id2 = entry4.get().strip()
+            class_id3 = entry5.get().strip()
+            class_id4 = entry6.get().strip()
 
-            # Ensure required fields are filled
             if name and class_id1:
                 try:
-                    # Default priority to 0 if not provided
                     priority = int(priority) if priority else 0
-
-                    # Collect all class IDs and filter out empty ones
-                    class_ids = [class_id for class_id in [class_id1, class_id2, class_id3, class_id4] if class_id]
-
-                    # Add faculty to the database
+                    class_ids = [cid for cid in [class_id1, class_id2, class_id3, class_id4] if cid]
                     db = DatabaseManager()
                     db.start_session()
                     db.add_faculty_ui(name=name, priority=priority, class_ids=class_ids)
                     db.end_session()
 
-                    # Add the faculty to the Treeview
-                    self.tree_Faculty.insert("", "end", values=(name,))
+                    # Instead of inserting directly, refresh the treeview
+                    self.update_treeview()
 
                     # Clear the entry fields
                     entry.delete(0, "end")
@@ -259,18 +254,14 @@ class ViewPageFaculty(tk.Frame):
 
 
     def update_treeview(self):
-        # Clear the existing data in the Treeview
         for item in self.tree_Faculty.get_children():
             self.tree_Faculty.delete(item)
-
-        # Fetch and display the faculty from the database
         db = DatabaseManager()
         db.start_session()
         faculties = db.get_faculty()
         db.end_session()
-
         for fac in faculties:
-            self.tree_Faculty.insert("", "end", values=(
+            self.tree_Faculty.insert("", "end", iid=fac.FacultyID, values=(
                 fac.Name,
                 fac.Priority,
                 fac.Class1,
@@ -279,12 +270,33 @@ class ViewPageFaculty(tk.Frame):
                 fac.Class4,
                 fac.Class5
             ))
+    
+    def show_context_menu(self, event):
+        item = self.tree_Faculty.identify_row(event.y)
+        if item:
+            menu = tk.Menu(self, tearoff=0)
+            menu.add_command(label="Delete", command=lambda: self.delete_item(item))
+            menu.post(event.x_root, event.y_root)
+    
+    def delete_item(self, item):
+        vals = self.tree_Faculty.item(item, 'values')  # (Name, Priority, Class1, Class2, Class3, Class4, Class5)
+        if not vals or len(vals) < 7:
+            print("Cannot determine faculty details.")
+            return
+        name, priority, cl1, cl2, cl3, cl4, cl5 = vals
+        try:
+            db = DatabaseManager()
+            db.start_session()
+            db.delete_faculty_by_values(name, priority, cl1, cl2, cl3, cl4, cl5)
+            db.end_session()
+            self.update_treeview()
+        except Exception as e:
+            print(f"Error deleting faculty: {e}")
 
     # -----------------------------
     # Raise and Reload Faculty Table
     # -----------------------------
     def tkraise(self, *args, **kwargs):
-        print("ViewPage_Course raised")
         super().tkraise(*args, **kwargs)
         self.update_treeview()
 

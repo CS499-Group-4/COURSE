@@ -155,17 +155,15 @@ class ViewPagePreference(tk.Frame):
             preference_type = dropdown_preference.get().strip()
             preference_value = entry3.get().strip()
 
-            # Ensure all fields are filled
             if name and preference_type != "Select Type" and preference_value:
                 try:
-                    # Add the preference to the database
                     db = DatabaseManager()
                     db.start_session()
                     db.add_preference(faculty_name=name, preference_type=preference_type, preference_value=preference_value)
                     db.end_session()
 
-                    # Add the preference to the Treeview
-                    self.tree_Perferences.insert("", "end", values=(f"{name} - {preference_type}: {preference_value}",))
+                    # Refresh the Preferences treeview
+                    self.update_treeview()
 
                     # Clear the input fields
                     entry.delete(0, "end")
@@ -202,28 +200,46 @@ class ViewPagePreference(tk.Frame):
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
         #----------------------------------------------------------------------------------------------------------------
-
+        self.tree_Perferences.bind("<Button-3>", self.show_context_menu)
 
 
 
     def update_treeview(self):
-        # Clear the existing data in the Treeview
         for item in self.tree_Perferences.get_children():
             self.tree_Perferences.delete(item)
-
-        # Fetch and display the preferences from the database using the new function
         db = DatabaseManager()
         db.start_session()
         preferences = db.get_preferences()
         db.end_session()
-
-        for faculty_name, pref_type, pref_value in preferences:
+        for pref in preferences:
             self.tree_Perferences.insert("", "end", values=(
-                faculty_name,
-                pref_type,
-                pref_value
+                pref.ProfessorName,
+                pref.PreferenceType,
+                pref.PreferenceValue
             ))
-
+    
+    def show_context_menu(self, event):
+        item = self.tree_Perferences.identify_row(event.y)
+        if (item):
+            menu = tk.Menu(self, tearoff=0)
+            menu.add_command(label="Delete", command=lambda: self.delete_item(item))
+            menu.post(event.x_root, event.y_root)
+    
+    def delete_item(self, item):
+        vals = self.tree_Perferences.item(item, 'values')  # (Faculty Name, Preference Type, Preference Value)
+        if not vals or len(vals) < 3:
+            print("Cannot determine preference details.")
+            return
+        faculty_name, pref_type, pref_value = vals
+        try:
+            db = DatabaseManager()
+            db.start_session()
+            db.delete_preference_by_values(faculty_name, pref_type, pref_value)
+            db.end_session()
+            self.update_treeview()
+        except Exception as e:
+            print(f"Error deleting preference: {e}")
+    
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
         self.update_treeview()
@@ -240,6 +256,8 @@ class ViewPagePreference(tk.Frame):
             self.tree_Perferences.move(k, '', index)
         # Reverse sort next time
         self.tree_Perferences.heading(col, command=lambda: self.sort_treeview(col, not reverse))
+
+
 
 
 
