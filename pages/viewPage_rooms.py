@@ -265,7 +265,7 @@ class ViewPageRooms(tk.Frame):
         for index, (val, k) in enumerate(l):
             self.tree_Rooms.move(k, '', index)
         # Reverse sort next time
-        self.tree_Rooms.heading(col, command=lambda: self.sort_treeview(scol, not reverse))
+        self.tree_Rooms.heading(col, command=lambda: self.sort_treeview(col, not reverse))
 
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
