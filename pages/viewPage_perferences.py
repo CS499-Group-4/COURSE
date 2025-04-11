@@ -142,19 +142,13 @@ class ViewPagePreference(tk.Frame):
 #                           TABLE
 #———————————————————————————————————————————————————————
 
-        self.columns5 = ("Perferences",)
-        self.tree_Perferences = ttk.Treeview(self, columns=self.columns5, show="headings", height=1)
-        self.tree_Perferences.heading("Perferences", text="Perferences")
-        self.tree_Perferences.column("Perferences", width=int(350 * scale_x), anchor="center")
-        self.tree_Perferences.insert("", "end", values=("cs101 need i room okt346",))
+        self.columns5 = ("Faculty Name", "Preference Type", "Preference Value")
+        self.tree_Perferences = ttk.Treeview(self, columns=self.columns5, show="headings", height=10)
+        for col in self.columns5:
+            self.tree_Perferences.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
+            self.tree_Perferences.column(col, width=int(1150 * scale_x)//len(self.columns5), anchor="center")
         self.tree_Perferences.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
-        # self.Perferences_entry = Entry(
-        #     self, bg="#DAEBFA", fg="#0A4578", 
-        #     font=("Arial", int(18)), relief="flat",
-        #     insertbackground="#0A4578"
-        # )
-        # self.Perferences_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
         def add_preference():
             # Retrieve values from the input fields
             name = entry.get().strip()
@@ -212,28 +206,40 @@ class ViewPagePreference(tk.Frame):
 
 
 
+    def update_treeview(self):
+        # Clear the existing data in the Treeview
+        for item in self.tree_Perferences.get_children():
+            self.tree_Perferences.delete(item)
 
+        # Fetch and display the preferences from the database using the new function
+        db = DatabaseManager()
+        db.start_session()
+        preferences = db.get_preferences()
+        db.end_session()
 
-
-
-
-
-
-
-
-    def load_preferences_from_file(self, file_path):
-        try:
-            _, _, _, _, preference_data = parse_csv_2(file_path, insert_into_db=False)
-            self.tree_Perferences.delete(*self.tree_Perferences.get_children())
-            for pref in preference_data:
-                self.tree_Perferences.insert("", "end", values=(pref,))
-        except Exception as e:
-            print(f"Error loading preference data: {e}")
+        for faculty_name, pref_type, pref_value in preferences:
+            self.tree_Perferences.insert("", "end", values=(
+                faculty_name,
+                pref_type,
+                pref_value
+            ))
 
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
-        if hasattr(self.controller, "selected_file_path"):
-            self.load_preferences_from_file(self.controller.selected_file_path)
+        self.update_treeview()
+
+    def sort_treeview(self, col, reverse):
+        # Get values from treeview
+        l = [(self.tree_Perferences.set(k, col), k) for k in self.tree_Perferences.get_children('')]
+        try:
+            l.sort(key=lambda t: float(t[0]) if t[0].replace('.','',1).isdigit() else t[0], reverse=reverse)
+        except Exception:
+            l.sort(reverse=reverse)
+        # Rearrange items in sorted positions
+        for index, (val, k) in enumerate(l):
+            self.tree_Perferences.move(k, '', index)
+        # Reverse sort next time
+        self.tree_Perferences.heading(col, command=lambda: self.sort_treeview(col, not reverse))
 
 
 

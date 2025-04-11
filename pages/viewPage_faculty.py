@@ -147,9 +147,12 @@ class ViewPageFaculty(tk.Frame):
         self.columns4 = ("Name", "Priority", "Class1", "Class2", "Class3", "Class4", "Class5")
         self.tree_Faculty = ttk.Treeview(self, columns=self.columns4, show="headings", height=10)
         for col in self.columns4:
-            self.tree_Faculty.heading(col, text=col)
+            self.tree_Faculty.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
             self.tree_Faculty.column(col, width=int(1150 * scale_x)//len(self.columns4), anchor="center")
         self.tree_Faculty.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
+        
+
+
 
         def add_faculty():
             name = entry.get().strip()  # Name field
@@ -228,7 +231,16 @@ class ViewPageFaculty(tk.Frame):
         #----------------------------------------------------------------------------------------------------------------
 
 
-
+    def sort_treeview(self, col, reverse):
+        # Get values and item ids from treeview
+        l = [(self.tree_Faculty.set(k, col), k) for k in self.tree_Faculty.get_children('')]
+        try:
+            l.sort(key=lambda t: float(t[0]) if t[0].replace('.','',1).isdigit() else t[0], reverse=reverse)
+        except Exception:
+            l.sort(reverse=reverse)
+        for index, (val, k) in enumerate(l):
+            self.tree_Faculty.move(k, '', index)
+        self.tree_Faculty.heading(col, command=lambda: self.sort_treeview(col, not reverse))
 
 
 

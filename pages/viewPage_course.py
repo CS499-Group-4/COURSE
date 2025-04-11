@@ -149,12 +149,13 @@ class ViewPageCourse(tk.Frame):
 #                           TABLE
 #———————————————————————————————————————————————————————
         self.columns = ("Course ID", "Department", "Max Enroll", "Room1", "Room2", "Room3", "Room4", "Room5")
-        # 创建 Treeview 表格
         self.tree_Course = ttk.Treeview(self, columns=self.columns, show="headings", height=10)
         for col in self.columns:
-            self.tree_Course.heading(col, text=col)
+            self.tree_Course.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
             self.tree_Course.column(col, width=int(1150 * scale_x)//len(self.columns), anchor="center")
         self.tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
+        
+
 
         # self.course_id_entry = Entry(
         #     self, bg="#DAEBFA", fg="#0A4578", 
@@ -244,6 +245,17 @@ class ViewPageCourse(tk.Frame):
         entry7 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry7.place(x=943.0 * scale_x, y=968.0 * scale_y, width=(1133.0 - 943.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
 
+
+    def sort_treeview(self, col, reverse):
+        # Get values and item ids from treeview
+        l = [(self.tree_Course.set(k, col), k) for k in self.tree_Course.get_children('')]
+        try:
+            l.sort(key=lambda t: float(t[0]) if t[0].replace('.','',1).isdigit() else t[0], reverse=reverse)
+        except Exception:
+            l.sort(reverse=reverse)
+        for index, (val, k) in enumerate(l):
+            self.tree_Course.move(k, '', index)
+        self.tree_Course.heading(col, command=lambda: self.sort_treeview(col, not reverse))
                 
     def update_treeview(self):
         # Clear the existing data in the Treeview
