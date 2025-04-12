@@ -168,26 +168,45 @@ class ViewPageOverall(tk.Frame):
         self.tree_Course.column("Course ID", anchor="center")
         self.tree_Course.place(x=465.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
+        self.scrollbar_course = ttk.Scrollbar(self, orient="vertical", command=self.tree_Course.yview)
+        self.tree_Course.configure(yscrollcommand=self.scrollbar_course.set)
+        self.scrollbar_course.place(x=(465.0 + 350.0) * scale_x, y=134.0 * scale_y, width=15, height=380.0 * scale_y)
+
         self.tree_Faculty = ttk.Treeview(self, columns=("Faculty",), show="headings", style="Custom.Treeview")
         self.tree_Faculty.heading("Faculty", text="Faculty")
         self.tree_Faculty.column("Faculty", anchor="center")
         self.tree_Faculty.place(x=880.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
+
+        self.scrollbar_faculty = ttk.Scrollbar(self, orient="vertical", command=self.tree_Faculty.yview)
+        self.tree_Faculty.configure(yscrollcommand=self.scrollbar_faculty.set)
+        self.scrollbar_faculty.place(x=(880.0 + 350.0) * scale_x, y=134.0 * scale_y, width=15, height=380.0 * scale_y)
 
         self.tree_Perferences = ttk.Treeview(self, columns=("PreferenceSummary",), show="headings", style="Custom.Treeview"  )
         self.tree_Perferences.heading("PreferenceSummary", text="Preferences Summary")
         self.tree_Perferences.column("PreferenceSummary", anchor="center")
         self.tree_Perferences.place(x=258.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
+        self.scrollbar_preferences = ttk.Scrollbar(self, orient="vertical", command=self.tree_Perferences.yview)
+        self.tree_Perferences.configure(yscrollcommand=self.scrollbar_preferences.set)
+        self.scrollbar_preferences.place(x=(258.0 + 350.0) * scale_x, y=596.0 * scale_y, width=15, height=380.0 * scale_y)
 
         self.tree_Rooms = ttk.Treeview(self, columns=("Rooms",), show="headings", style="Custom.Treeview")
         self.tree_Rooms.heading("Rooms", text="Rooms")
         self.tree_Rooms.column("Rooms", anchor="center")
         self.tree_Rooms.place(x=673.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
+        self.scrollbar_rooms = ttk.Scrollbar(self, orient="vertical", command=self.tree_Rooms.yview)
+        self.tree_Rooms.configure(yscrollcommand=self.scrollbar_rooms.set)
+        self.scrollbar_rooms.place(x=(673.0 + 350.0) * scale_x, y=596.0 * scale_y, width=15, height=380.0 * scale_y)
+
         self.tree_Time = ttk.Treeview(self, columns=("Time",), show="headings", style="Custom.Treeview")
         self.tree_Time.heading("Time", text="Time")
         self.tree_Time.column("Time", anchor="center")
         self.tree_Time.place(x=1088.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
+
+        self.scrollbar_time = ttk.Scrollbar(self, orient="vertical", command=self.tree_Time.yview)
+        self.tree_Time.configure(yscrollcommand=self.scrollbar_time.set)
+        self.scrollbar_time.place(x=(1088.0 + 350.0) * scale_x, y=596.0 * scale_y, width=15, height=380.0 * scale_y)
 
 
         for tree in [self.tree_Course, self.tree_Faculty, self.tree_Perferences, self.tree_Rooms, self.tree_Time]:

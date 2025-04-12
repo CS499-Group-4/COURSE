@@ -149,6 +149,13 @@ class ViewPagePreference(tk.Frame):
             self.tree_Perferences.column(col, width=int(1150 * scale_x)//len(self.columns5), anchor="center")
         self.tree_Perferences.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
+        self.tree_Perferences.tag_configure("evenrow", background="#E6F2FF")
+        self.tree_Perferences.tag_configure("oddrow", background="#FFFFFF")
+
+        self.scrollbar_preferences = ttk.Scrollbar(self, orient="vertical", command=self.tree_Perferences.yview)
+        self.tree_Perferences.configure(yscrollcommand=self.scrollbar_preferences.set)
+        self.scrollbar_preferences.place(x=271.0 * scale_x + 1150.0 * scale_x, y=124.0 * scale_y, width=15, height=700.0 * scale_y)
+
         def add_preference():
             # Retrieve values from the input fields
             name = entry.get().strip()
@@ -211,12 +218,13 @@ class ViewPagePreference(tk.Frame):
         db.start_session()
         preferences = db.get_preferences()
         db.end_session()
-        for pref in preferences:
+        for i, pref in enumerate(preferences):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
             self.tree_Perferences.insert("", "end", values=(
                 pref.ProfessorName,
                 pref.PreferenceType,
                 pref.PreferenceValue
-            ))
+            ), tags=(tag,))
     
     def show_context_menu(self, event):
         item = self.tree_Perferences.identify_row(event.y)
