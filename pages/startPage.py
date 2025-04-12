@@ -137,7 +137,7 @@ class StartPage(tk.Frame):
         canvas.place(x=0, y=0)
         
         canvas.create_rectangle(0.0, 1.0, 235.0, 1042.0, fill="#79BCF7", outline="")
-        
+        canvas.create_rectangle(918.0 , 1.0, 1458.0 ,1042.0,fill="#DAEBF9",outline="")
 # Navigation button: switch page
        # ----------------------------HomePage------------------------------------------
         btn5_img = scaled_photoimage(str(relative_to_assets("button_5.png")), scale_x, scale_y)
