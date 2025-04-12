@@ -153,6 +153,12 @@ class ViewPageFaculty(tk.Frame):
         
         self.tree_Faculty.bind("<Button-3>", self.show_context_menu)
 
+        self.scrollbar_faculty = ttk.Scrollbar(self, orient="vertical", command=self.tree_Faculty.yview)
+        self.tree_Faculty.configure(yscrollcommand=self.scrollbar_faculty.set)
+        self.scrollbar_faculty.place(x=271.0 * scale_x + 1150.0 * scale_x, y=124.0 * scale_y, width=15, height=700.0 * scale_y)
+
+        self.tree_Faculty.tag_configure("evenrow", background="#E6F2FF")
+        self.tree_Faculty.tag_configure("oddrow", background="#FFFFFF")
 
 
         def add_faculty():
@@ -260,7 +266,8 @@ class ViewPageFaculty(tk.Frame):
         db.start_session()
         faculties = db.get_faculty()
         db.end_session()
-        for fac in faculties:
+        for i, fac in enumerate(faculties):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
             self.tree_Faculty.insert("", "end", iid=fac.FacultyID, values=(
                 fac.Name,
                 fac.Priority,
@@ -269,7 +276,7 @@ class ViewPageFaculty(tk.Frame):
                 fac.Class3,
                 fac.Class4,
                 fac.Class5
-            ))
+            ), tags=(tag,))
     
     def show_context_menu(self, event):
         item = self.tree_Faculty.identify_row(event.y)

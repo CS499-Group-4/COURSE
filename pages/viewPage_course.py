@@ -155,7 +155,14 @@ class ViewPageCourse(tk.Frame):
             self.tree_Course.column(col, width=int(1150 * scale_x)//len(self.columns), anchor="center")
         self.tree_Course.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
         
+        self.scrollbar_course = ttk.Scrollbar(self, orient="vertical", command=self.tree_Course.yview)
+        self.tree_Course.configure(yscrollcommand=self.scrollbar_course.set)
+        self.scrollbar_course.place(x=271.0 * scale_x + 1150.0 * scale_x, y=124.0 * scale_y, width=15, height=700.0 * scale_y)
+
         self.tree_Course.bind("<Button-3>", self.show_context_menu)
+
+        self.tree_Course.tag_configure("evenrow", background="#E6F2FF")
+        self.tree_Course.tag_configure("oddrow", background="#FFFFFF")
 
         # self.course_id_entry = Entry(
         #     self, bg="#DAEBFA", fg="#0A4578", 
@@ -263,7 +270,8 @@ class ViewPageCourse(tk.Frame):
         db.start_session()
         courses = db.get_course()
         db.end_session()
-        for course in courses:
+        for i, course in enumerate(courses):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
             self.tree_Course.insert("", "end", iid=course.CourseID, values=(
                 course.CourseID,
                 course.Department,
@@ -273,7 +281,7 @@ class ViewPageCourse(tk.Frame):
                 course.ReqRoom3,
                 course.ReqRoom4,
                 course.ReqRoom5
-            ))
+            ), tags=(tag,))
     
     def show_context_menu(self, event):
         item = self.tree_Course.identify_row(event.y)

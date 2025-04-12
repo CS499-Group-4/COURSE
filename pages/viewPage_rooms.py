@@ -150,6 +150,13 @@ class ViewPageRooms(tk.Frame):
             self.tree_Rooms.column(col, width=int(1150 * scale_x)//len(self.columns2), anchor="center")
         self.tree_Rooms.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
+        self.tree_Rooms.tag_configure("evenrow", background="#E6F2FF")
+        self.tree_Rooms.tag_configure("oddrow", background="#FFFFFF")
+
+        self.scrollbar_rooms = ttk.Scrollbar(self, orient="vertical", command=self.tree_Rooms.yview)
+        self.tree_Rooms.configure(yscrollcommand=self.scrollbar_rooms.set)
+        self.scrollbar_rooms.place(x=(271.0 * scale_x + 1150.0 * scale_x), y=124.0 * scale_y, width=15, height=700.0 * scale_y)
+
         def add_room():
             # Retrieve values from the input fields
             room_id = entry.get().strip()
@@ -230,13 +237,14 @@ class ViewPageRooms(tk.Frame):
         db.start_session()
         rooms = db.get_classrooms()
         db.end_session()
-        for room in rooms:
+        for i, room in enumerate(rooms):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
             self.tree_Rooms.insert("", "end", iid=room.RoomID, values=(
                 room.RoomID,
                 room.Department,
                 room.Building,
                 room.Capacity
-            ))
+            ), tags=(tag,))
 
     def show_context_menu(self, event):
         item = self.tree_Rooms.identify_row(event.y)
@@ -271,7 +279,7 @@ class ViewPageRooms(tk.Frame):
         super().tkraise(*args, **kwargs)
         self.update_treeview()
 
-    
+
 
 
 

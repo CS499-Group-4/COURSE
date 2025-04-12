@@ -150,6 +150,13 @@ class ViewPageTimes(tk.Frame):
             self.tree_Time.column(col, width=int(1150 * scale_x)//len(self.columns_times), anchor="center")
         self.tree_Time.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
         
+        self.scrollbar_times = ttk.Scrollbar(self, orient="vertical", command=self.tree_Time.yview)
+        self.tree_Time.configure(yscrollcommand=self.scrollbar_times.set)
+        self.scrollbar_times.place(x=271.0 * scale_x + 1150.0 * scale_x, y=124.0 * scale_y, width=15, height=700.0 * scale_y)
+        
+        self.tree_Time.tag_configure("evenrow", background="#E6F2FF")
+        self.tree_Time.tag_configure("oddrow", background="#FFFFFF")
+        
         # Update the add_time function to call update_treeview after DB insertion
         def add_time():
             # Retrieve values from the input fields
@@ -216,13 +223,13 @@ class ViewPageTimes(tk.Frame):
         timeslots = db.get_timeslot()
         db.end_session()
 
-        for slot in timeslots:
-            # Use slot.SlotID as the iid (hidden, not shown in columns)
+        for i, slot in enumerate(timeslots):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
             self.tree_Time.insert("", "end", iid=slot.SlotID, values=(
                 slot.Days,
                 slot.StartTime,
                 slot.EndTime
-            ))
+            ), tags=(tag,))
 
     # Add these methods for the right-click deletion:
     def show_context_menu(self, event):
