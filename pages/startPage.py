@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-#from tktooltip import ToolTip
+from tktooltip import ToolTip
 
 #import the generate_scheduler() function from lib/scheduler.py
 from lib.Scheduler import CourseScheduler
@@ -182,7 +182,7 @@ class StartPage(tk.Frame):
                           command=runScheduler, relief="flat")
         button_6.image = button_image_6
         button_6.place(x=1100.0 * scale_x, y=36.0 * scale_y, width=206.0 * scale_x, height=101.0 * scale_y)
-        #ToolTip(button_6, msg="Click to Generate Schedule", delay=1.0)
+        ToolTip(button_6, msg="Click to Generate Schedule", delay=1.0)
 
         #  CANCLE bottom
         # button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
@@ -257,7 +257,7 @@ class StartPage(tk.Frame):
                            command=lambda: print("button_11 clicked"), relief="flat")
         button_11.image = button_image_11
         button_11.place(x=1224.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
-        #ToolTip(button_11, msg="Push Schedule Changes", delay=1.0)
+        ToolTip(button_11, msg="Push Schedule Changes", delay=1.0)
 
         
         #logo iamge

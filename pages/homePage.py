@@ -31,6 +31,9 @@ class HomePage(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
+        open_width = 1455
+        open_height = 1041
+
         orig_width = 1455
         orig_height = 1041
         new_width = 800
