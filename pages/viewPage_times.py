@@ -8,6 +8,9 @@ import tkinter.ttk as ttk
 #from tktooltip import ToolTip
 from lib.CSV_Parser import parse_csv_2
 from lib.DatabaseManager import DatabaseManager
+import re
+from datetime import datetime
+import tkinter.messagebox as mbox
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -163,27 +166,57 @@ class ViewPageTimes(tk.Frame):
             days = entry.get().strip()
             start_time = entry2.get().strip()
             end_time = entry3.get().strip()
-    
+
             # Ensure all fields are filled
-            if (days and start_time and end_time):
-                try:
-                    # Add the timeslot to the database
-                    db = DatabaseManager()
-                    db.start_session()
-                    db.add_timeslot(days=days, start_time=start_time, end_time=end_time)
+            if not (days and start_time and end_time):
+                mbox.showerror("Missing Field", "Please fill in Days, Start Time, and End Time.")
+                return
+
+            # Validate days: Must only contain M, T, W, R, F with each letter only once
+            if not re.fullmatch(r"(?!.*(.).*\1)[MTWRF]+", days):
+                mbox.showerror("Invalid Days", "Days must only contain the letters M, T, W, R, F with no duplicates.")
+                return
+
+            # Validate start and end times using the 24hr format HH:MM
+            try:
+                start_dt = datetime.strptime(start_time, "%H:%M")
+            except ValueError:
+                mbox.showerror("Invalid Start Time", "Please enter a valid start time in 24hr format (HH:MM).")
+                return
+
+            try:
+                end_dt = datetime.strptime(end_time, "%H:%M")
+            except ValueError:
+                mbox.showerror("Invalid End Time", "Please enter a valid end time in 24hr format (HH:MM).")
+                return
+
+            if end_dt <= start_dt:
+                mbox.showerror("Time Order Error", "End time must be after start time. \nPlease also be sure to use the 24hr format instead of 12hr format.")
+                return
+
+            # Check for duplicate timeslot in the database
+            db = DatabaseManager()
+            db.start_session()
+            existing_slots = db.get_timeslot()
+            for slot in existing_slots:
+                if slot.Days == days and slot.StartTime == start_time and slot.EndTime == end_time:
+                    mbox.showerror("Duplicate Timeslot", "This timeslot already exists in the database.")
                     db.end_session()
-    
-                    # Refresh the treeview after DB insertion
-                    self.update_treeview()
-    
-                    # Clear the input fields
-                    entry.delete(0, "end")
-                    entry2.delete(0, "end")
-                    entry3.delete(0, "end")
-                except Exception as e:
-                    print(f"Error adding timeslot: {e}")
-            else:
-                print("Please fill in all required fields (Days, Start Time, and End Time).")
+                    return
+
+            # Add the new timeslot since all validations passed
+            try:
+                db.add_timeslot(days=days, start_time=start_time, end_time=end_time)
+                db.end_session()
+                # Refresh the treeview after DB insertion
+                self.update_treeview()
+                # Clear the input fields
+                entry.delete(0, "end")
+                entry2.delete(0, "end")
+                entry3.delete(0, "end")
+            except Exception as e:
+                db.end_session()
+                mbox.showerror("Error Adding Timeslot", f"Error adding timeslot: {e}")
     
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_time)
