@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
 from lib.CSV_Parser import parse_csv_2
-from lib.DatabaseManager import DatabaseManager
+from lib.DatabaseManager import DatabaseManager, Classroom, Course
 import re
 import tkinter.messagebox as mbox
 
@@ -173,10 +173,8 @@ class ViewPageCourse(tk.Frame):
         # )
         # self.course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
         def add_course():
-            print("Add course button clicked")
             course_id = entry.get().strip()
             # Standardize course_id: Ensure the department part is uppercase and there's a space before the number
-            
             match = re.match(r'([A-Za-z]+)\s*(\d+)', course_id)
             if match:
                 dept = match.group(1).upper()
@@ -199,37 +197,71 @@ class ViewPageCourse(tk.Frame):
                 required_room3 = required_room3.upper()
             if required_room4:
                 required_room4 = required_room4.upper()
+            
+            # -- Error checking for required fields --
+            if not course_id or not department or not max_enrollment:
+                mbox.showerror("Missing Required Field", "Please fill in Course ID, Department, and Max/Estimated Enrollment.")
+                return
+            
+            try:
+                max_enrollment_int = int(max_enrollment)
+            except ValueError:
+                mbox.showerror("Invalid Enrollment", "Max/Estimated Enrollment must be a valid integer.")
+                return
 
-            if course_id and department and max_enrollment:
-                try:
-                    db = DatabaseManager()
-                    db.start_session()
-                    db.add_course(
-                        course_id=course_id,
-                        department=department,
-                        max_enrollment=int(max_enrollment),  # Convert as needed
-                        req_room1=required_room1 if required_room1 else None,
-                        req_room2=required_room2 if required_room2 else None,
-                        req_room3=required_room3 if required_room3 else None,
-                        req_room4=required_room4 if required_room4 else None
-                    )
+            # Create a DatabaseManager session for checking room existence
+            db = DatabaseManager()
+            db.start_session()
+            
+            # -- Check warnings for room IDs (if provided) --
+            def check_room(room_str):
+                if room_str:
+                    existing_room = db.session.query(Classroom).filter_by(RoomID=room_str).first()
+                    if not existing_room:
+                        mbox.showwarning("Room Not Found", f"Room '{room_str}' does not exist in the database. It will not be assigned to the course unless added on the Rooms tab.")
+                    return room_str
+                return None
+
+            
+
+            required_room1 = check_room(required_room1)
+            required_room2 = check_room(required_room2)
+            required_room3 = check_room(required_room3)
+            required_room4 = check_room(required_room4)
+            
+            # Check if the course already exists in the database
+
+
+            try:
+                existing_course = db.session.query(Course).filter_by(CourseID=course_id).first()
+                if existing_course:
+                    mbox.showerror("Course Exists", f"Course '{course_id}' already exists in the database.")
                     db.end_session()
-
-                    # Refresh the Course treeview after DB insertion
-                    self.update_treeview()
-
-                    # Clear the entry fields
-                    entry.delete(0, "end")
-                    entry2.delete(0, "end")
-                    entry3.delete(0, "end")
-                    entry4.delete(0, "end")
-                    entry5.delete(0, "end")
-                    entry6.delete(0, "end")
-                    entry7.delete(0, "end")
-                except Exception as e:
-                    print(f"Error adding course: {e}")
-            else:
-                print("Please fill in all required fields.")
+                    return
+                # Add the course to the database
+                db.add_course(
+                    course_id=course_id,
+                    department=department,
+                    max_enrollment=max_enrollment_int,
+                    req_room1=required_room1,
+                    req_room2=required_room2,
+                    req_room3=required_room3,
+                    req_room4=required_room4
+                )
+                db.end_session()
+                # Refresh the Course treeview after DB insertion
+                self.update_treeview()
+                # Clear the entry fields
+                entry.delete(0, "end")
+                entry2.delete(0, "end")
+                entry3.delete(0, "end")
+                entry4.delete(0, "end")
+                entry5.delete(0, "end")
+                entry6.delete(0, "end")
+                entry7.delete(0, "end")
+            except Exception as e:
+                db.end_session()
+                mbox.showerror("Error Adding Course", f"Error adding course: {e}")
         # add
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
@@ -246,22 +278,18 @@ class ViewPageCourse(tk.Frame):
         canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Course ID:", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=375.0 * scale_x, y=860.0 * scale_y, width=(575.0 - 375.0) * scale_x, height=(910.0 - 860.0) * scale_y)
-        add_placeholder(entry, "CS 319")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 604.0* scale_x,869.0 * scale_y, anchor="nw", text="Department", fill="#094478", font=("Jomolhari Regular",9))
         entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry2.place(x=743.0 * scale_x, y=860.0 * scale_y, width=(943.0 - 743.0) * scale_x, height=(910.0 - 860.0) * scale_y)
-        add_placeholder(entry2, "Computer Science")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 970.0* scale_x,869.0 * scale_y, anchor="nw", text="Max/Estimated Enrollment:", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=1240.0 * scale_x, y=860.0 * scale_y, width=(1413.0 - 1240.0) * scale_x, height=(910.0 - 860.0) * scale_y)
-        add_placeholder(entry3, "115")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 307.0* scale_x, 929.0 * scale_y, anchor="nw", text="Required room 1", fill="#094478", font=("Jomolhari Regular", 9))
         entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry4.place(x=285.0 * scale_x, y=968.0 * scale_y, width=(475.0 - 285.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
-        add_placeholder(entry4, "OKT N315")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 522.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 2", fill="#094478", font=("Jomolhari Regular", 9))
         entry5 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
@@ -328,19 +356,19 @@ class ViewPageCourse(tk.Frame):
         super().tkraise(*args, **kwargs)
         self.update_treeview()
 
-def add_placeholder(entry, placeholder):
-    entry.insert(0, placeholder)
-    entry.config(fg='grey')
-    def on_focus_in(event):
-        if entry.get() == placeholder:
-            entry.delete(0, 'end')
-            entry.config(fg='black')
-    def on_focus_out(event):
-        if not entry.get():
-            entry.insert(0, placeholder)
-            entry.config(fg='grey')
-    entry.bind("<FocusIn>", on_focus_in)
-    entry.bind("<FocusOut>", on_focus_out)
+# def add_placeholder(entry, placeholder):
+#     entry.insert(0, placeholder)
+#     entry.config(fg='grey')
+#     def on_focus_in(event):
+#         if entry.get() == placeholder:
+#             entry.delete(0, 'end')
+#             entry.config(fg='black')
+#     def on_focus_out(event):
+#         if not entry.get():
+#             entry.insert(0, placeholder)
+#             entry.config(fg='grey')
+#     entry.bind("<FocusIn>", on_focus_in)
+#     entry.bind("<FocusOut>", on_focus_out)
 
 
 
