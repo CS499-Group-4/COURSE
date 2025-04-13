@@ -8,6 +8,7 @@ from lib.DatabaseManager import DatabaseManager, Preference  # Import the Databa
 from lib.CSV_Parser import parse_csv  # Import the parse_csv function
 from tkinter import messagebox
 from lib.CSV_Parser import parse_csv_2
+from tktooltip import ToolTip
 import shutil
 
 # ---------------------------
@@ -163,7 +164,7 @@ class UploadPage(tk.Frame):
                              command=self.refresh_file_list, relief="flat")
         refresh_btn.image = refresh_img
         refresh_btn.place(x=452.0 * scale_x, y=958.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
-
+        ToolTip(refresh_btn, msg="Refresh file list", delay=1.0)
         self.refresh_file_list()
 
 
@@ -173,6 +174,7 @@ class UploadPage(tk.Frame):
                              command=self.refresh_file_list, relief="flat")
         confirm_btn.image = confirm_img
         confirm_btn.place(x=918.0 * scale_x, y=958.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
+        ToolTip(confirm_btn, msg="Add file to system", delay=1.0)
 
         
         # File upload button: covers a large area, click to trigger upload

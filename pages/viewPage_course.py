@@ -7,6 +7,7 @@ import os
 import tkinter.ttk as ttk
 from lib.CSV_Parser import parse_csv_2
 from lib.DatabaseManager import DatabaseManager
+from tktooltip import ToolTip
 
 #from tktooltip import ToolTip
 
@@ -201,6 +202,7 @@ class ViewPageCourse(tk.Frame):
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
+        ToolTip(btn13, msg="Add new data to system", delay=1.0)
         
 
 #——————————————————————————————————————————————————

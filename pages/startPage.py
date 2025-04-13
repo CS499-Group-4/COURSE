@@ -230,7 +230,7 @@ class StartPage(tk.Frame):
                           command=lambda: print("button_8 clicked"), relief="flat")
         button_8.image = button_image_8
         button_8.place(x=1090.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
-        #ToolTip(button_8, msg="Resolve All Conflicts", delay=1.0)
+        ToolTip(button_8, msg="Resolve All Conflicts", delay=1.0)
 
 
 
