@@ -6,7 +6,8 @@ from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
 from lib.CSV_Parser import parse_csv_2
-from lib.DatabaseManager import DatabaseManager
+from lib.DatabaseManager import DatabaseManager, Classroom
+import tkinter.messagebox as mbox
 #from tktooltip import ToolTip
 
 # ---------------------------
@@ -165,38 +166,55 @@ class ViewPageRooms(tk.Frame):
             building = entry4.get().strip()
 
             # Ensure all fields are filled
-            if room_id and capacity and department and building:
-                try:
-                    # Convert capacity to an integer
-                    capacity = int(capacity)
+            if not (room_id and capacity and department and building):
+                mbox.showerror("Missing Field", "Please fill in all required fields: Room ID, Capacity, Department, and Building.")
+                return
 
-                    # Add the room to the database
-                    db = DatabaseManager()
-                    db.start_session()
-                    db.add_classroom(
-                        room_id=room_id,
-                        department=department,
-                        building=building,
-                        room=room_id,  # if room should equal room_id, otherwise adjust accordingly
-                        capacity=capacity
-                    )
-                    db.end_session()
+            # Format room_id: all letters must be capitalized
+            room_id = room_id.upper()
 
-                    # Refresh the treeview instead of adding the value manually
-                    self.update_treeview()
+            # Validate capacity: Must be a non-zero positive integer
+            try:
+                capacity_int = int(capacity)
+                if capacity_int <= 0:
+                    mbox.showerror("Invalid Capacity", "Capacity must be a non-zero positive integer.")
+                    return
+            except ValueError:
+                mbox.showerror("Invalid Capacity", "Capacity must be a valid integer.")
+                return
 
-                    # Clear the input fields
-                    entry.delete(0, "end")
-                    entry2.delete(0, "end")
-                    entry3.delete(0, "end")
-                    entry4.delete(0, "end")
-                except ValueError:
-                    print("Capacity must be a valid integer.")
-                except Exception as e:
-                    print(f"Error adding room: {e}")
-            else:
-                print("Please fill in all required fields (Room ID, Capacity, Department, and Building).")
+            db = DatabaseManager()
+            db.start_session()
 
+            # Ensure RoomID doesn't already exist in the database
+            existing_room = db.session.query(Classroom).filter_by(RoomID=room_id).first()
+            if existing_room:
+                mbox.showerror("Room Exists", f"Room '{room_id}' already exists in the database.")
+                db.end_session()
+                return
+
+            try:
+                # Add the room to the database
+                db.add_classroom(
+                    room_id=room_id,
+                    department=department,
+                    building=building,
+                    room=room_id,  # Use room_id for room
+                    capacity=capacity_int
+                )
+                db.end_session()
+
+                # Refresh the treeview
+                self.update_treeview()
+
+                # Clear the entry fields
+                entry.delete(0, "end")
+                entry2.delete(0, "end")
+                entry3.delete(0, "end")
+                entry4.delete(0, "end")
+            except Exception as e:
+                db.end_session()
+                mbox.showerror("Error Adding Room", f"Error adding room: {e}")
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_room)
