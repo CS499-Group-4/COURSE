@@ -45,6 +45,9 @@ class MainApp(tk.Tk):
         super().__init__()
         self.title("course")
         self.geometry("800x600")
+
+        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
+        self.bind("<Configure>", self.rescale)
         
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -63,6 +66,10 @@ class MainApp(tk.Tk):
     def show_frame(self, page_class):
         frame = self.frames[page_class]
         frame.tkraise()
+
+    def rescale(self, event):
+        if event.widget == self:
+            self.current_frame.scale_widgets(event.width, event.height)
 
 # ---------------------------
 # Program entry

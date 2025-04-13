@@ -208,8 +208,9 @@ class SettingPage(tk.Frame):
         canvas.scale("all", 0, 0, scale_x, scale_y)
 
         # work in progress cover
-        overlay = Canvas(self, bg="#0A4578", height=orig_height, width=orig_width, bd=0, highlightthickness=0, relief="ridge")
+        overlay = Canvas(self, bg="#3198f3", height=orig_height, width=orig_width, bd=0, highlightthickness=0, relief="ridge")
         overlay.place(x=125.0, y=0)
         overlay.create_text(350, 100, text = "THIS PAGE IS A", fill = "white", font=("Helvetica", 32, "bold"))
         overlay.create_text(350, 150, text = "WORK IN PROGRESS", fill = "white", font=("Helvetica", 32, "bold"))
         overlay.create_text(350, 200, text = "NEW FEATURES COMING SOON", fill = "white", font=("Helvetica", 32, "bold"))
+        

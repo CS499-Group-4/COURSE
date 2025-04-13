@@ -31,9 +31,6 @@ class HomePage(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
-        open_width = 1455
-        open_height = 1041
-
         orig_width = 1455
         orig_height = 1041
         new_width = 800
@@ -112,3 +109,5 @@ class HomePage(tk.Frame):
         canvas.create_text(366.4585 * scale_x, 234.97 * scale_y,
                            anchor="nw", text=desc_text, fill="#094478",
                            font=("Roboto Regular", int(20 * scale_y)))
+        
+
