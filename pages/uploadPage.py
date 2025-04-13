@@ -154,19 +154,19 @@ class UploadPage(tk.Frame):
 
         self.refresh_file_list()
 
-        # File refresh button (if needed)
-        refresh_img = scaled_photoimage(str(relative_to_assets("refresh_button.png")), scale_x, scale_y)
-        refresh_btn = Button(self, image=refresh_img, borderwidth=0, highlightthickness=0,
-                             command=self.refresh_file_list, relief="flat")
-        refresh_btn.image = refresh_img
-        refresh_btn.place(x=452.0 * scale_x, y=958.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
-
         # Confirm button now triggers parsing of files.
         confirm_img = scaled_photoimage(str(relative_to_assets("confirm_button.png")), scale_x, scale_y)
         confirm_btn = Button(self, image=confirm_img, borderwidth=0, highlightthickness=0,
                              command=self.confirm_upload, relief="flat")
         confirm_btn.image = confirm_img
-        confirm_btn.place(x=918.0 * scale_x, y=958.0 * scale_y, width=290 * scale_x, height=69 * scale_y)
+        # Center the confirm button horizontally within an 800-pixel wide area:
+        # Calculate the center based on the upload button's position and width:
+        upload_x = 250 * scale_x
+        upload_width = 1177 * scale_x
+        confirm_width = 290 * scale_x
+        center_x = upload_x + (upload_width - confirm_width) / 2
+
+        confirm_btn.place(x=center_x, y=958.0 * scale_y, width=confirm_width, height=69 * scale_y)
 
         # File upload button covers a large area.
         btn6_img = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
