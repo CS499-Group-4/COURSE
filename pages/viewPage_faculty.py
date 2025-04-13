@@ -7,8 +7,9 @@ import os
 import tkinter.ttk as ttk
 #from tktooltip import ToolTip
 from lib.CSV_Parser import parse_csv_2
-from lib.DatabaseManager import DatabaseManager
-
+from lib.DatabaseManager import DatabaseManager, Course
+import tkinter.messagebox as mbox
+import re
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -162,36 +163,88 @@ class ViewPageFaculty(tk.Frame):
 
 
         def add_faculty():
-            name = entry.get().strip()        # Adjust to reference the proper Name entry
-            priority = entry2.get().strip()     # And any other values if needed
+            name = entry.get().strip()
+            priority_str = entry2.get().strip()
             class_id1 = entry3.get().strip()
             class_id2 = entry4.get().strip()
             class_id3 = entry5.get().strip()
             class_id4 = entry6.get().strip()
 
-            if name and class_id1:
-                try:
-                    priority = int(priority) if priority else 0
-                    class_ids = [cid for cid in [class_id1, class_id2, class_id3, class_id4] if cid]
-                    db = DatabaseManager()
-                    db.start_session()
-                    db.add_faculty_ui(name=name, priority=priority, class_ids=class_ids)
-                    db.end_session()
+            # Check for empty Professor name and missing Class ID 1
+            if not name:
+                mbox.showerror("Missing Field", "Professor name cannot be empty.")
+                return
+            if not class_id1:
+                mbox.showerror("Missing Field", "At least one class (Class ID 1) must be provided.")
+                return
 
-                    # Instead of inserting directly, refresh the treeview
-                    self.update_treeview()
+            db = DatabaseManager()
+            db.start_session()
+            # Check for duplicate professor name (case-insensitive)
+            faculties = db.get_faculty()
+            if any(fac.Name.lower() == name.lower() for fac in faculties):
+                mbox.showerror("Duplicate Entry", "A professor with this name already exists in the database.")
+                db.end_session()
+                return
 
-                    # Clear the entry fields
-                    entry.delete(0, "end")
-                    entry2.delete(0, "end")
-                    entry3.delete(0, "end")
-                    entry4.delete(0, "end")
-                    entry5.delete(0, "end")
-                    entry6.delete(0, "end")
-                except Exception as e:
-                    print(f"Error adding faculty: {e}")
-            else:
-                print("Please fill in all required fields (Name and Class ID 1).")
+            # Convert and validate priority
+            try:
+                priority = int(priority_str) if priority_str else 0
+            except ValueError:
+                mbox.showerror("Invalid Value", "Please enter a valid value (number >= 0) for the priority.")
+                db.end_session()
+                return
+
+            if priority < 0:
+                mbox.showerror("Invalid Priority", "Priority must be a non-negative value (number >= 0).")
+                db.end_session()
+                return
+
+            # Function to standardize class IDs (e.g., "abc123" -> "ABC 123")
+            def standardize_class_id(cid):
+                match = re.match(r'([A-Za-z]+)\s*(\d+)', cid)
+                if match:
+                    return f"{match.group(1).upper()} {match.group(2)}"
+                return cid.upper()
+
+            # Process each class ID: class_id1 is required; default others to None if blank
+            class_id1 = standardize_class_id(class_id1)
+            class_id2 = standardize_class_id(class_id2) if class_id2.strip() else None
+            class_id3 = standardize_class_id(class_id3) if class_id3.strip() else None
+            class_id4 = standardize_class_id(class_id4) if class_id4.strip() else None
+
+            # For each non-None class, warn if the course doesn't exist in the database.
+            for cid in [class_id1, class_id2, class_id3, class_id4]:
+                if cid:
+                    existing_course = db.session.query(Course).filter_by(CourseID=cid).first()
+                    if not existing_course:
+                        mbox.showwarning(
+                            "Course Not Found",
+                            f"Course '{cid}' does not exist. The professor won't be assigned to this course unless added on the Courses page."
+                        )
+
+            # Prepare class IDs list, filtering out None for optional ones if desired
+            class_ids = [class_id1]
+            for cid in [class_id2, class_id3, class_id4]:
+                class_ids.append(cid)  # will be None if not provided
+
+            try:
+                db.add_faculty_ui(name=name, priority=priority, class_ids=class_ids)
+                db.end_session()
+
+                # Refresh the treeview
+                self.update_treeview()
+
+                # Clear the entry fields
+                entry.delete(0, "end")
+                entry2.delete(0, "end")
+                entry3.delete(0, "end")
+                entry4.delete(0, "end")
+                entry5.delete(0, "end")
+                entry6.delete(0, "end")
+            except Exception as e:
+                db.end_session()
+                mbox.showerror("Error Adding Faculty", f"Error adding faculty: {e}")
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0,
