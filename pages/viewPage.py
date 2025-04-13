@@ -95,7 +95,7 @@ class ViewPage(tk.Frame):
         image_2 = scaled_photoimage(str(relative_to_assets("image_2.png")), scale_x, scale_y)
         canvas.create_image(2050.0 * scale_x, 70.0 * scale_y, image=image_2)
         canvas.image = image_2
-        ToolTip(image_2, msg="Click to Search Schedule", delay=1.0)
+        #ToolTip(image_2, msg="Click to Search Schedule", delay=1.0)
 
         canvas.create_text(1980.0 * scale_x, 195.0 * scale_y, anchor="nw",
                            text="SORT BY:", fill="#094478",
