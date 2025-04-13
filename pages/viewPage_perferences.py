@@ -7,7 +7,10 @@ import os
 import tkinter.ttk as ttk
 #from tktooltip import ToolTip
 from lib.CSV_Parser import parse_csv_2
-from lib.DatabaseManager import DatabaseManager
+from lib.DatabaseManager import DatabaseManager, Classroom  # Ensure Classroom is imported
+import tkinter.messagebox as mbox
+import re
+
 # ---------------------------
 # Common helper functions and resource paths
 # ---------------------------
@@ -162,24 +165,67 @@ class ViewPagePreference(tk.Frame):
             preference_type = dropdown_preference.get().strip()
             preference_value = entry3.get().strip()
 
-            if name and preference_type != "Select Type" and preference_value:
-                try:
-                    db = DatabaseManager()
-                    db.start_session()
-                    db.add_preference(faculty_name=name, preference_type=preference_type, preference_value=preference_value)
+            # Validate all fields are filled
+            if not (name and preference_type and preference_value):
+                mbox.showerror("Missing Field", "Please fill in all required fields: Name, Preference Type, and Preference.")
+                return
+
+            db = DatabaseManager()
+            db.start_session()
+
+            # Validate that the professor exists in the database
+            faculties = db.get_faculty()
+            if not any(fac.Name.lower() == name.lower() for fac in faculties):
+                mbox.showerror("Invalid Professor", f"Professor '{name}' does not exist in the database.")
+                db.end_session()
+                return
+
+            # Validate a valid preference type is selected (Room, Day, or Time)
+            if preference_type.lower() not in {"room", "day", "time"}:
+                mbox.showerror("Invalid Preference Type", "Please select a valid Preference Type: Room, Day, or Time.")
+                db.end_session()
+                return
+
+            # Process based on the selected Preference Type
+            if preference_type.lower() == "room":
+                # Check if room exists; if not, warn user but still proceed
+                room = db.session.query(Classroom).filter_by(RoomID=preference_value.upper()).first()
+                if not room:
+                    mbox.showwarning(
+                        "Room Not Found",
+                        f"Room '{preference_value}' does not exist in the database. "
+                        "It will need to be added on the Rooms tab in order to be assigned."
+                    )
+                preference_value = preference_value.upper()
+            elif preference_type.lower() == "day":
+                # Must be a valid combination of letters: M, T, W, R, F with no duplicates
+                if not re.fullmatch(r"(?!.*(.).*\1)[MTWRF]+", preference_value.upper()):
+                    mbox.showerror("Invalid Day", "Preference for Day must only contain the letters M, T, W, R, F with no duplicates.")
                     db.end_session()
+                    return
+                preference_value = preference_value.upper()
+            elif preference_type.lower() == "time":
+                # Must be one of morning, afternoon, or evening, stored with first letter capitalized
+                valid_times = {"morning", "afternoon", "evening"}
+                if preference_value.lower() not in valid_times:
+                    mbox.showerror("Invalid Time", "Preference for Time must be one of: morning, afternoon, or evening.")
+                    db.end_session()
+                    return
+                preference_value = preference_value.lower().capitalize()
 
-                    # Refresh the Preferences treeview
-                    self.update_treeview()
-
-                    # Clear the input fields
-                    entry.delete(0, "end")
-                    dropdown_preference.set("Select Type")
-                    entry3.delete(0, "end")
-                except Exception as e:
-                    print(f"Error adding preference: {e}")
-            else:
-                print("Please fill in all required fields (Name, Preference Type, and Preference).")
+            try:
+                # Capitalize the preference type when storing it
+                db.add_preference(faculty_name=name, preference_type=preference_type.capitalize(), preference_value=preference_value)
+                db.end_session()
+                # Refresh the Preferences treeview
+                self.update_treeview()
+                # Clear the input fields
+                entry.delete(0, "end")
+                dropdown_preference.set("Select Type")
+                entry3.delete(0, "end")
+            except Exception as e:
+                db.end_session()
+                mbox.showerror("Error Adding Preference", f"Error adding preference: {e}")
 
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
