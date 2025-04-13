@@ -7,6 +7,8 @@ import os
 import tkinter.ttk as ttk
 from lib.CSV_Parser import parse_csv_2
 from lib.DatabaseManager import DatabaseManager
+import re
+import tkinter.messagebox as mbox
 
 #from tktooltip import ToolTip
 
@@ -173,12 +175,30 @@ class ViewPageCourse(tk.Frame):
         def add_course():
             print("Add course button clicked")
             course_id = entry.get().strip()
+            # Standardize course_id: Ensure the department part is uppercase and there's a space before the number
+            
+            match = re.match(r'([A-Za-z]+)\s*(\d+)', course_id)
+            if match:
+                dept = match.group(1).upper()
+                number = match.group(2)
+                course_id = f"{dept} {number}"
+            # Retrieve remaining values
             department = entry2.get().strip()
             max_enrollment = entry3.get().strip()
             required_room1 = entry4.get().strip()
             required_room2 = entry5.get().strip()
             required_room3 = entry6.get().strip()
             required_room4 = entry7.get().strip()
+            
+            # Standardize required room inputs to uppercase
+            if required_room1:
+                required_room1 = required_room1.upper()
+            if required_room2:
+                required_room2 = required_room2.upper()
+            if required_room3:
+                required_room3 = required_room3.upper()
+            if required_room4:
+                required_room4 = required_room4.upper()
 
             if course_id and department and max_enrollment:
                 try:
@@ -226,18 +246,22 @@ class ViewPageCourse(tk.Frame):
         canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Course ID:", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=375.0 * scale_x, y=860.0 * scale_y, width=(575.0 - 375.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        add_placeholder(entry, "CS 319")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 604.0* scale_x,869.0 * scale_y, anchor="nw", text="Department", fill="#094478", font=("Jomolhari Regular",9))
         entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry2.place(x=743.0 * scale_x, y=860.0 * scale_y, width=(943.0 - 743.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        add_placeholder(entry2, "Computer Science")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 970.0* scale_x,869.0 * scale_y, anchor="nw", text="Max/Estimated Enrollment:", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=1240.0 * scale_x, y=860.0 * scale_y, width=(1413.0 - 1240.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        add_placeholder(entry3, "115")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 307.0* scale_x, 929.0 * scale_y, anchor="nw", text="Required room 1", fill="#094478", font=("Jomolhari Regular", 9))
         entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry4.place(x=285.0 * scale_x, y=968.0 * scale_y, width=(475.0 - 285.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        add_placeholder(entry4, "OKT N315")
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 522.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 2", fill="#094478", font=("Jomolhari Regular", 9))
         entry5 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
@@ -303,6 +327,20 @@ class ViewPageCourse(tk.Frame):
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
         self.update_treeview()
+
+def add_placeholder(entry, placeholder):
+    entry.insert(0, placeholder)
+    entry.config(fg='grey')
+    def on_focus_in(event):
+        if entry.get() == placeholder:
+            entry.delete(0, 'end')
+            entry.config(fg='black')
+    def on_focus_out(event):
+        if not entry.get():
+            entry.insert(0, placeholder)
+            entry.config(fg='grey')
+    entry.bind("<FocusIn>", on_focus_in)
+    entry.bind("<FocusOut>", on_focus_out)
 
 
 
