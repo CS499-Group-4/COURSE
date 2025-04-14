@@ -172,11 +172,11 @@ def make_treeview_editable():
         # Bind the click event to the root window
         tree.winfo_toplevel().bind("<Button-1>", close_combobox, add="+")
 
-        # Unbind the click event when the Combobox is destroyed
-        def on_destroy(event):
-            tree.winfo_toplevel().unbind("<Button-1>", close_combobox)
+        # # Unbind the click event when the Combobox is destroyed
+        # def on_destroy(event):
+        #     tree.winfo_toplevel().unbind("<Button-1>", close_combobox)
 
-        combobox.bind("<Destroy>", on_destroy)
+        # combobox.bind("<Destroy>", on_destroy)
 
     # Bind the double-click event to the Treeview
     tree.bind("<Double-1>", on_double_click)
