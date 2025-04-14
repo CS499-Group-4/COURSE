@@ -28,26 +28,34 @@ def export_schedule_to_csv(output_file, filter_type=None, filter_value=None):
         writer = csv.writer(csvfile)
 
         # Write the header row
-        writer.writerow(["Faculty Name", "Course ID", "Classroom", "Days", "Start Time", "End Time"])
+        writer.writerow([
+            "Faculty Name", "Course ID", "Classroom", "Days", "Start Time", "End Time",
+            "Room Capacity", "Course Max Enrollment"
+        ])
 
         # Write the filtered schedule data
         for schedule in schedules:
             # Retrieve related data
-            faculty = db_manager.session.query(Faculty).filter_by(FacultyID=schedule.Professor).first() # Get faculty details
-            course = db_manager.session.query(Course).filter_by(CourseID=schedule.Course).first() # Get course details
-            classroom = db_manager.session.query(Classroom).filter_by(RoomID=schedule.Classroom).first() # Get classroom details
-            timeslot = db_manager.session.query(TimeSlot).filter_by(SlotID=schedule.TimeSlot).first() # Get timeslot details
+            faculty = db_manager.session.query(Faculty).filter_by(FacultyID=schedule.Professor).first()  # Get faculty details
+            course = db_manager.session.query(Course).filter_by(CourseID=schedule.Course).first()  # Get course details
+            classroom = db_manager.session.query(Classroom).filter_by(RoomID=schedule.Classroom).first()  # Get classroom details
+            timeslot = db_manager.session.query(TimeSlot).filter_by(SlotID=schedule.TimeSlot).first()  # Get timeslot details
 
             # Extract details
-            faculty_name = faculty.Name if faculty else "N/A" 
+            faculty_name = faculty.Name if faculty else "N/A"
             course_id = course.CourseID if course else "N/A"
             classroom_id = classroom.RoomID if classroom else "N/A"
             days = timeslot.Days if timeslot else "N/A"
             start_time = timeslot.StartTime if timeslot else "N/A"
             end_time = timeslot.EndTime if timeslot else "N/A"
+            room_capacity = classroom.Capacity if classroom else "N/A"
+            course_max_enrollment = course.MaxEnrollment if course else "N/A"
 
             # Write the row to the CSV file
-            writer.writerow([faculty_name, course_id, classroom_id, days, start_time, end_time])
+            writer.writerow([
+                faculty_name, course_id, classroom_id, days, start_time, end_time,
+                room_capacity, course_max_enrollment
+            ])
 
     print(f"Filtered schedule successfully exported to {output_file}")
 
