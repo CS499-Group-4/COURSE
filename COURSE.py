@@ -10,7 +10,7 @@ from pages.startPage import StartPage
 from pages.uploadPage import UploadPage
 from pages.settingPage import SettingPage
 from pages.conflictPage import ConflictPage
-from pages.viewPage import ViewPage
+#from pages.viewPage import ViewPage
 from pages.exportPage import ExportPage
 from pages.viewPage_overall import ViewPageOverall
 from pages.viewPage_course import ViewPageCourse
@@ -55,7 +55,8 @@ class MainApp(TkinterDnD.Tk):
         container.grid_columnconfigure(0, weight=1)
         
         self.frames = {}
-        for F in (HomePage, StartPage, UploadPage, SettingPage, ConflictPage, ViewPage, ExportPage,ViewPageOverall,ViewPageCourse, ViewPageFaculty, ViewPagePreference, ViewPageTimes, ViewPageRooms):
+        for F in (HomePage, StartPage, UploadPage, SettingPage, ConflictPage, ExportPage,ViewPageOverall,ViewPageCourse, ViewPageFaculty, ViewPagePreference, ViewPageTimes, ViewPageRooms):
+        #for F in (HomePage, StartPage, UploadPage, SettingPage, ConflictPage, ViewPage, ExportPage,ViewPageOverall,ViewPageCourse, ViewPageFaculty, ViewPagePreference, ViewPageTimes, ViewPageRooms):
             pageName = F.__name__
             page = F(parent=container, controller=self)
             self.frames[pageName] = page
