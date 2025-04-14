@@ -11,6 +11,7 @@ from tkinter import messagebox
 from lib.CSV_Parser import parse_csv_2
 import shutil
 import json  # Add this import at the top if not already imported
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -131,6 +132,26 @@ class UploadPage(tk.Frame):
                 
                 # Finished uploading image indicator
                 self.canvas.itemconfigure(self.uploading_img_id, state='hidden')
+                
+        def handle_drop(file_path):
+            file_path = file_path.strip("{}")
+            if os.path.isfile(file_path):
+                selected_name = os.path.basename(file_path)
+                self.canvas.itemconfig(self.selected_file_text_id, text=selected_name)
+
+                self.canvas.itemconfigure(self.success_img_id, state='hidden')
+                self.canvas.itemconfigure(self.failed_img_id, state='hidden')
+                self.canvas.itemconfigure(self.uploading_img_id, state='normal')
+
+                os.makedirs("uploads", exist_ok=True)
+                target_path = os.path.join("uploads", selected_name)
+                shutil.copy(file_path, target_path)
+
+                self.add_file_entry(selected_name, target_path)
+
+                self.canvas.itemconfigure(self.uploading_img_id, state='hidden')
+
+
 
         # Treeview with 3 columns; "filepath" is hidden.
         self.file_tree = ttk.Treeview(self, columns=("filename", "filepath", "action"),
@@ -169,12 +190,14 @@ class UploadPage(tk.Frame):
         confirm_btn.place(x=center_x, y=958.0 * scale_y, width=confirm_width, height=69 * scale_y)
 
         # File upload button covers a large area.
-        btn6_img = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
+        btn6_img = scaled_photoimage(str(relative_to_assets("button_12.png")), scale_x, scale_y)
         btn6 = Button(self, image=btn6_img, borderwidth=0, highlightthickness=0,
                       command=upload_file, relief="flat")
         btn6.image = btn6_img
         btn6.place(x=250.0 * scale_x, y=25.0 * scale_y, width=1177.0 * scale_x, height=211.0 * scale_y)
-        
+        btn6.drop_target_register(DND_FILES)
+        btn6.dnd_bind('<<Drop>>', lambda e: handle_drop(e.data))
+
         # ...existing image items for logo, success, uploading, failed images...
         img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
         self.canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
@@ -199,6 +222,8 @@ class UploadPage(tk.Frame):
         self.canvas.image4 = img4
 
         self.canvas.scale("all", 0, 0, scale_x, scale_y)
+
+
 
     def load_state(self):
         if os.path.exists(self.state_file):
@@ -302,4 +327,6 @@ class UploadPage(tk.Frame):
         else:
             print("Database not yet initialized; skipping view page refresh.")
 
+
+   
 
