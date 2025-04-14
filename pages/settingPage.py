@@ -45,7 +45,7 @@ class SettingPage(tk.Frame):
                         bd=0, highlightthickness=0, relief="ridge")
         canvas.place(x=0, y=0)
         
-        canvas.create_rectangle(0.0, 1.0, 235.0, 1042.0, fill="#79BCF7", outline="")
+        canvas.create_rectangle(0.0, 0.0, 235.0, 1042.0, fill="#79BCF7", outline="")
         
         canvas.create_rectangle(296.0, 41.0, 1403.0, 148.0, fill="#DAEBF9", outline="")
         

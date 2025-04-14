@@ -42,7 +42,7 @@ class HomePage(tk.Frame):
                         bd=0, highlightthickness=0, relief="ridge")
         canvas.pack(fill="both", expand=True)
         
-        canvas.create_rectangle(0.0, 1.0, 235.0, 1042.0, fill="#79BCF7", outline="")
+        canvas.create_rectangle(0.0, 0.0, 235.0* scale_x, 1042.0, fill="#79BCF7", outline="")
 
 # Navigation button: switch page
        # ----------------------------HomePage------------------------------------------
@@ -81,14 +81,15 @@ class HomePage(tk.Frame):
                       command=lambda: controller.show_frame("SettingPage"), relief="flat")
         btn1.image = btn1_img
         btn1.place(x=0.0 * scale_x, y=502.0 * scale_y, width=235.0 * scale_x, height=100.0 * scale_y)
-        
-        
+                
         #logo iamge
         img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
         canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=img1)
         canvas.image = img1
-        canvas.create_rectangle(257.0, 13.0, 1434.0, 1023.0, fill="#DAEBF9", outline="")
-        canvas.scale("all", 0, 0, scale_x, scale_y)
+
+        canvas.create_rectangle(255.0* scale_x, 20.0 * scale_y, 1435.0* scale_x, 1020.0* scale_y, fill="#DAEBF9", outline="")
+        #canvas.scale("all", 0, 0, scale_x, scale_y)
+
         canvas.create_text(486.2366 * scale_x, 95.0247 * scale_y,
                            anchor="nw", text="Welcome to Course Scheduling System",
                            fill="#094478", font=("Roboto Black", int(30 * scale_y)))
