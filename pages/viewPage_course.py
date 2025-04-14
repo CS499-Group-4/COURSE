@@ -197,13 +197,16 @@ class ViewPageCourse(tk.Frame):
             if required_room4:
                 required_room4 = required_room4.upper()
             
-            # -- Error checking for required fields --
+            # -- Error checking for required fields -- 
             if not course_id or not department or not max_enrollment:
                 mbox.showerror("Missing Required Field", "Please fill in Course ID, Department, and Max/Estimated Enrollment.")
                 return
             
             try:
                 max_enrollment_int = int(max_enrollment)
+                if max_enrollment_int <= 0:
+                    mbox.showerror("Invalid Enrollment", "Max/Estimated Enrollment must be a positive integer greater than zero.")
+                    return
             except ValueError:
                 mbox.showerror("Invalid Enrollment", "Max/Estimated Enrollment must be a valid integer.")
                 return
