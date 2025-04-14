@@ -254,7 +254,7 @@ class ViewPagePreference(tk.Frame):
         canvas.create_text( 273.0* scale_x,969.0 * scale_y, anchor="nw", text="Preference ：", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
-        ToolTip(entry3, msg="Enter Preference \nRoom Example: MW \n Time Example: Evening", delay=0.5)
+        ToolTip(entry3, msg="Enter Preference \nRoom Example: MW \nTime Example: Evening", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         self.tree_Perferences.bind("<Button-3>", self.show_context_menu)
 
