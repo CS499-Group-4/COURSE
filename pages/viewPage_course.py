@@ -278,30 +278,37 @@ class ViewPageCourse(tk.Frame):
         canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Course ID:", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=375.0 * scale_x, y=860.0 * scale_y, width=(575.0 - 375.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        ToolTip(entry, msg="Enter Course ID \nExample: CS 100", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 604.0* scale_x,869.0 * scale_y, anchor="nw", text="Department", fill="#094478", font=("Jomolhari Regular",9))
         entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry2.place(x=743.0 * scale_x, y=860.0 * scale_y, width=(943.0 - 743.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        ToolTip(entry2, msg="Enter Department \nExample: Computer Science", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 970.0* scale_x,869.0 * scale_y, anchor="nw", text="Max/Estimated Enrollment:", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=1240.0 * scale_x, y=860.0 * scale_y, width=(1413.0 - 1240.0) * scale_x, height=(910.0 - 860.0) * scale_y)
+        ToolTip(entry3, msg="Enter Max or Estimated Enrollement \nExample: 40", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 307.0* scale_x, 929.0 * scale_y, anchor="nw", text="Required room 1", fill="#094478", font=("Jomolhari Regular", 9))
         entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry4.place(x=285.0 * scale_x, y=968.0 * scale_y, width=(475.0 - 285.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        ToolTip(entry4, msg="Enter Room Requirement \nExample: OKT 324", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 522.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 2", fill="#094478", font=("Jomolhari Regular", 9))
         entry5 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry5.place(x=500.0 * scale_x, y=968.0 * scale_y, width=(690.0 - 500.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        ToolTip(entry5, msg="Enter Room Requirement \nExample: OKT 172", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 738.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 3", fill="#094478", font=("Jomolhari Regular", 9))
         entry6 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry6.place(x=716.0 * scale_x, y=968.0 * scale_y, width=(906.0 - 716.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        ToolTip(entry6, msg="Enter Room Requirement \nExample: OKT 245", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 965.0* scale_x,929.0 * scale_y, anchor="nw", text="Required room 4", fill="#094478", font=("Jomolhari Regular", 9))
         entry7 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry7.place(x=943.0 * scale_x, y=968.0 * scale_y, width=(1133.0 - 943.0) * scale_x, height=(1018.0 - 968.0) * scale_y)
+        ToolTip(entry7, msg="Enter Room Requirement \nExample: OKT 112", delay=1.0)
 
 
     def sort_treeview(self, col, reverse):

@@ -233,14 +233,17 @@ class ViewPageTimes(tk.Frame):
         canvas.create_text(  277.0* scale_x,  873.0 * scale_y, anchor="nw", text="Days   ：", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=401.0 * scale_x, y=864.0 * scale_y, width=260 * scale_x, height=50 * scale_y)
+        ToolTip(entry, msg="Enter Assigned Days \nExample: MW or TR", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 277.0* scale_x,973.0 * scale_y, anchor="nw", text="Start Time：", fill="#094478", font=("Jomolhari Regular",9))
         entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry2.place(x=401.0 * scale_x, y=965.0 * scale_y, width=260 * scale_x, height=50 * scale_y)
+        ToolTip(entry2, msg="Enter Class Start Time \nExample: 08:00 or 14:20", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 727.0* scale_x,974.0 * scale_y, anchor="nw", text="End Time：", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=844.0 * scale_x, y=965.0 * scale_y, width=260 * scale_x, height=50 * scale_y)
+        ToolTip(entry3, msg="Enter Class End Time \nExample: 09:15 or 15:35", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
 
         self.tree_Time.bind("<Button-3>", self.show_context_menu)

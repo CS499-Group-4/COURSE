@@ -233,18 +233,22 @@ class ViewPageRooms(tk.Frame):
         canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Room ID：", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=408.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        ToolTip(entry, msg="Enter Room ID \nExample: Technology425", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 745.0* scale_x,869.0 * scale_y, anchor="nw", text="Capacity：", fill="#094478", font=("Jomolhari Regular",9))
         entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry2.place(x=851.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        ToolTip(entry2, msg="Enter Room Capacity \nExample: 45", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 270.0* scale_x,970.0 * scale_y, anchor="nw", text="Department：", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=408.0 * scale_x, y=959.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        ToolTip(entry3, msg="Enter Department \nExample: Computer Science", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 745.0* scale_x, 970.0 * scale_y, anchor="nw", text="Building：", fill="#094478", font=("Jomolhari Regular", 9))
         entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry4.place(x=851.0 * scale_x, y=961.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        ToolTip(entry4, msg="Enter Building \nExample: Technology Hall", delay=1.0)
         #----------------------------------------------------------------------------------------------------------------
         self.tree_Rooms.bind("<Button-3>", self.show_context_menu)
 

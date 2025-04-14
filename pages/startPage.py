@@ -385,7 +385,7 @@ class StartPage(tk.Frame):
         )
         button_11.image = button_image_11
         button_11.place(x=1224.0 * scale_x, y=893.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
-        ToolTip(button_11, msg="Push Schedule Changes", delay=1.0)
+        ToolTip(button_11, msg="Apply Schedule Changes", delay=1.0)
 
         
         #logo iamge
