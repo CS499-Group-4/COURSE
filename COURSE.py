@@ -67,10 +67,6 @@ class MainApp(tk.Tk):
         frame = self.frames[page_class]
         frame.tkraise()
 
-    def rescale(self, event):
-        if event.widget == self:
-            self.current_frame.scale_widgets(event.width, event.height)
-
 # ---------------------------
 # Program entry
 # ---------------------------
