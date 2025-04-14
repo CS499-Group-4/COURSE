@@ -5,9 +5,12 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-#from tktooltip import ToolTip
+from tktooltip import ToolTip
 from lib.CSV_Parser import parse_csv_2
-from lib.DatabaseManager import DatabaseManager
+from lib.DatabaseManager import DatabaseManager, Classroom  # Ensure Classroom is imported
+import tkinter.messagebox as mbox
+import re
+
 # ---------------------------
 # Common helper functions and resource paths
 # ---------------------------
@@ -142,51 +145,94 @@ class ViewPagePreference(tk.Frame):
 #                           TABLE
 #———————————————————————————————————————————————————————
 
-        self.columns5 = ("Perferences",)
-        self.tree_Perferences = ttk.Treeview(self, columns=self.columns5, show="headings", height=1)
-        self.tree_Perferences.heading("Perferences", text="Perferences")
-        self.tree_Perferences.column("Perferences", width=int(350 * scale_x), anchor="center")
-        self.tree_Perferences.insert("", "end", values=("cs101 need i room okt346",))
+        self.columns5 = ("Faculty Name", "Preference Type", "Preference Value")
+        self.tree_Perferences = ttk.Treeview(self, columns=self.columns5, show="headings", height=10)
+        for col in self.columns5:
+            self.tree_Perferences.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
+            self.tree_Perferences.column(col, width=int(1150 * scale_x)//len(self.columns5), anchor="center")
         self.tree_Perferences.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
 
-        # self.Perferences_entry = Entry(
-        #     self, bg="#DAEBFA", fg="#0A4578", 
-        #     font=("Arial", int(18)), relief="flat",
-        #     insertbackground="#0A4578"
-        # )
-        # self.Perferences_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
+        self.tree_Perferences.tag_configure("evenrow", background="#E6F2FF")
+        self.tree_Perferences.tag_configure("oddrow", background="#FFFFFF")
+
+        self.scrollbar_preferences = ttk.Scrollbar(self, orient="vertical", command=self.tree_Perferences.yview)
+        self.tree_Perferences.configure(yscrollcommand=self.scrollbar_preferences.set)
+        self.scrollbar_preferences.place(x=271.0 * scale_x + 1150.0 * scale_x, y=124.0 * scale_y, width=15, height=700.0 * scale_y)
+
         def add_preference():
             # Retrieve values from the input fields
             name = entry.get().strip()
             preference_type = dropdown_preference.get().strip()
             preference_value = entry3.get().strip()
 
-            # Ensure all fields are filled
-            if name and preference_type != "Select Type" and preference_value:
-                try:
-                    # Add the preference to the database
-                    db = DatabaseManager()
-                    db.start_session()
-                    db.add_preference(faculty_name=name, preference_type=preference_type, preference_value=preference_value)
+            # Validate all fields are filled
+            if not (name and preference_type and preference_value):
+                mbox.showerror("Missing Field", "Please fill in all required fields: Name, Preference Type, and Preference.")
+                return
+
+            db = DatabaseManager()
+            db.start_session()
+
+            # Validate that the professor exists in the database
+            faculties = db.get_faculty()
+            if not any(fac.Name.lower() == name.lower() for fac in faculties):
+                mbox.showerror("Invalid Professor", f"Professor '{name}' does not exist in the database.")
+                db.end_session()
+                return
+
+            # Validate a valid preference type is selected (Room, Day, or Time)
+            if preference_type.lower() not in {"room", "day", "time"}:
+                mbox.showerror("Invalid Preference Type", "Please select a valid Preference Type: Room, Day, or Time.")
+                db.end_session()
+                return
+
+            # Process based on the selected Preference Type
+            if preference_type.lower() == "room":
+                # Check if room exists; if not, warn user but still proceed
+                room = db.session.query(Classroom).filter_by(RoomID=preference_value.upper()).first()
+                if not room:
+                    mbox.showwarning(
+                        "Room Not Found",
+                        f"Room '{preference_value}' does not exist in the database. "
+                        "It will need to be added on the Rooms tab in order to be assigned."
+                    )
+                preference_value = preference_value.upper()
+            elif preference_type.lower() == "day":
+                # Must be a valid combination of letters: M, T, W, R, F with no duplicates
+                if not re.fullmatch(r"(?!.*(.).*\1)[MTWRF]+", preference_value.upper()):
+                    mbox.showerror("Invalid Day", "Preference for Day must only contain the letters M, T, W, R, F with no duplicates.")
                     db.end_session()
+                    return
+                preference_value = preference_value.upper()
+            elif preference_type.lower() == "time":
+                # Must be one of morning, afternoon, or evening, stored with first letter capitalized
+                valid_times = {"morning", "afternoon", "evening"}
+                if preference_value.lower() not in valid_times:
+                    mbox.showerror("Invalid Time", "Preference for Time must be one of: morning, afternoon, or evening.")
+                    db.end_session()
+                    return
+                preference_value = preference_value.lower().capitalize()
 
-                    # Add the preference to the Treeview
-                    self.tree_Perferences.insert("", "end", values=(f"{name} - {preference_type}: {preference_value}",))
-
-                    # Clear the input fields
-                    entry.delete(0, "end")
-                    dropdown_preference.set("Select Type")
-                    entry3.delete(0, "end")
-                except Exception as e:
-                    print(f"Error adding preference: {e}")
-            else:
-                print("Please fill in all required fields (Name, Preference Type, and Preference).")
+            try:
+                # Capitalize the preference type when storing it
+                db.add_preference(faculty_name=name, preference_type=preference_type.capitalize(), preference_value=preference_value)
+                db.end_session()
+                # Refresh the Preferences treeview
+                self.update_treeview()
+                # Clear the input fields
+                entry.delete(0, "end")
+                dropdown_preference.set("Select Type")
+                entry3.delete(0, "end")
+            except Exception as e:
+                db.end_session()
+                mbox.showerror("Error Adding Preference", f"Error adding preference: {e}")
 
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_preference)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
+        ToolTip(btn13, msg="Add new data to system", delay=1.0)
 
 #——————————————————————————————————————————————————
 #          USER add PART
@@ -208,32 +254,65 @@ class ViewPagePreference(tk.Frame):
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
         #----------------------------------------------------------------------------------------------------------------
+        self.tree_Perferences.bind("<Button-3>", self.show_context_menu)
 
 
 
-
-
-
-
-
-
-
-
-
-
-    def load_preferences_from_file(self, file_path):
+    def update_treeview(self):
+        for item in self.tree_Perferences.get_children():
+            self.tree_Perferences.delete(item)
+        db = DatabaseManager()
+        db.start_session()
+        preferences = db.get_preferences()
+        db.end_session()
+        for i, pref in enumerate(preferences):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
+            self.tree_Perferences.insert("", "end", values=(
+                pref.ProfessorName,
+                pref.PreferenceType,
+                pref.PreferenceValue
+            ), tags=(tag,))
+    
+    def show_context_menu(self, event):
+        item = self.tree_Perferences.identify_row(event.y)
+        if (item):
+            menu = tk.Menu(self, tearoff=0)
+            menu.add_command(label="Delete", command=lambda: self.delete_item(item))
+            menu.post(event.x_root, event.y_root)
+    
+    def delete_item(self, item):
+        vals = self.tree_Perferences.item(item, 'values')  # (Faculty Name, Preference Type, Preference Value)
+        if not vals or len(vals) < 3:
+            print("Cannot determine preference details.")
+            return
+        faculty_name, pref_type, pref_value = vals
         try:
-            _, _, _, _, preference_data = parse_csv_2(file_path, insert_into_db=False)
-            self.tree_Perferences.delete(*self.tree_Perferences.get_children())
-            for pref in preference_data:
-                self.tree_Perferences.insert("", "end", values=(pref,))
+            db = DatabaseManager()
+            db.start_session()
+            db.delete_preference_by_values(faculty_name, pref_type, pref_value)
+            db.end_session()
+            self.update_treeview()
         except Exception as e:
-            print(f"Error loading preference data: {e}")
-
+            print(f"Error deleting preference: {e}")
+    
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
-        if hasattr(self.controller, "selected_file_path"):
-            self.load_preferences_from_file(self.controller.selected_file_path)
+        self.update_treeview()
+
+    def sort_treeview(self, col, reverse):
+        # Get values from treeview
+        l = [(self.tree_Perferences.set(k, col), k) for k in self.tree_Perferences.get_children('')]
+        try:
+            l.sort(key=lambda t: float(t[0]) if t[0].replace('.','',1).isdigit() else t[0], reverse=reverse)
+        except Exception:
+            l.sort(reverse=reverse)
+        # Rearrange items in sorted positions
+        for index, (val, k) in enumerate(l):
+            self.tree_Perferences.move(k, '', index)
+        # Reverse sort next time
+        self.tree_Perferences.heading(col, command=lambda: self.sort_treeview(col, not reverse))
+
+
 
 
 

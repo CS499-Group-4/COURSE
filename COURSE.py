@@ -18,6 +18,7 @@ from pages.viewPage_faculty import ViewPageFaculty
 from pages.viewPage_perferences import ViewPagePreference
 from pages.viewPage_times import ViewPageTimes
 from pages.viewPage_rooms import ViewPageRooms
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 
 # ---------------------------
@@ -39,12 +40,14 @@ def scaled_photoimage(image_path: str, scale_x: float, scale_y: float) -> ImageT
 
 # ---------------------------
 # Main application: manage the jump of each page# ---------------------------
-class MainApp(tk.Tk):
-
+class MainApp(TkinterDnD.Tk):
+    
     def __init__(self):
         super().__init__()
         self.title("course")
         self.geometry("800x600")
+
+        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
         
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)

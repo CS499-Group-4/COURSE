@@ -8,7 +8,7 @@ import tkinter.ttk as ttk
 import shutil
 from lib.DatabaseManager import DatabaseManager
 from lib.CSV_Parser import parse_csv_2
-#from tktooltip import ToolTip
+from tktooltip import ToolTip
 from tkinter import messagebox
 
 # ---------------------------
@@ -149,74 +149,174 @@ class ViewPageOverall(tk.Frame):
 #———————————————————————————————————————————————————————
 #                           TABLE
 #———————————————————————————————————————————————————————
-        #file drop down
-       # Dropdown for uploaded files
-        self.course_dropdown = ttk.Combobox(self, state="readonly")
-        self.course_dropdown.set("Select File")
-        self.course_dropdown.place(x=300.0 * scale_x, y=134.0 * scale_y, width=200.0 * scale_x, height=100.0 * scale_y)
-        self.course_dropdown.bind("<<ComboboxSelected>>", self.on_file_selected)
+       #  #file drop down
+       # # Dropdown for uploaded files
+       #  self.course_dropdown = ttk.Combobox(self, state="readonly")
+       #  self.course_dropdown.set("Select File")
+       #  self.course_dropdown.place(x=300.0 * scale_x, y=134.0 * scale_y, width=200.0 * scale_x, height=100.0 * scale_y)
+       #  self.course_dropdown.bind("<<ComboboxSelected>>", self.on_file_selected)
+        # Treeview Style
+        style = ttk.Style()
+        style.configure("Custom.Treeview", background="#E6F2FF", foreground="#000000",  rowheight=28,  fieldbackground="#E6F2FF" )
+        style.configure("Custom.Treeview.Heading", background="#B3D9FF", foreground="#003366",  font=("Arial", 11, "bold"))
+        style.map("Custom.Treeview", background=[("selected", "#0A4578")] )
+
 
         # Treeview widgets
-        self.tree_Course = ttk.Treeview(self, columns=("Course ID",), show="headings")
+        self.tree_Course = ttk.Treeview(self, columns=("Course ID",), show="headings", style="Custom.Treeview")
         self.tree_Course.heading("Course ID", text="Course ID")
-        self.tree_Course.place(x=673.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
+        self.tree_Course.column("Course ID", anchor="center")
+        self.tree_Course.place(x=465.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
-        self.tree_Faculty = ttk.Treeview(self, columns=("Faculty",), show="headings")
+        self.scrollbar_course = ttk.Scrollbar(self, orient="vertical", command=self.tree_Course.yview)
+        self.tree_Course.configure(yscrollcommand=self.scrollbar_course.set)
+        self.scrollbar_course.place(x=(465.0 + 350.0) * scale_x, y=134.0 * scale_y, width=15, height=380.0 * scale_y)
+
+        self.tree_Faculty = ttk.Treeview(self, columns=("Faculty",), show="headings", style="Custom.Treeview")
         self.tree_Faculty.heading("Faculty", text="Faculty")
-        self.tree_Faculty.place(x=1088.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
+        self.tree_Faculty.column("Faculty", anchor="center")
+        self.tree_Faculty.place(x=880.0 * scale_x, y=134.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
-        self.tree_Perferences = ttk.Treeview(self, columns=("Perferences",), show="headings")
-        self.tree_Perferences.heading("Perferences", text="Perferences")
+        self.scrollbar_faculty = ttk.Scrollbar(self, orient="vertical", command=self.tree_Faculty.yview)
+        self.tree_Faculty.configure(yscrollcommand=self.scrollbar_faculty.set)
+        self.scrollbar_faculty.place(x=(880.0 + 350.0) * scale_x, y=134.0 * scale_y, width=15, height=380.0 * scale_y)
+
+        self.tree_Perferences = ttk.Treeview(self, columns=("PreferenceSummary",), show="headings", style="Custom.Treeview"  )
+        self.tree_Perferences.heading("PreferenceSummary", text="Preferences Summary")
+        self.tree_Perferences.column("PreferenceSummary", anchor="center")
         self.tree_Perferences.place(x=258.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
-        self.tree_Rooms = ttk.Treeview(self, columns=("Rooms",), show="headings")
+        self.scrollbar_preferences = ttk.Scrollbar(self, orient="vertical", command=self.tree_Perferences.yview)
+        self.tree_Perferences.configure(yscrollcommand=self.scrollbar_preferences.set)
+        self.scrollbar_preferences.place(x=(258.0 + 350.0) * scale_x, y=596.0 * scale_y, width=15, height=380.0 * scale_y)
+
+        self.tree_Rooms = ttk.Treeview(self, columns=("Rooms",), show="headings", style="Custom.Treeview")
         self.tree_Rooms.heading("Rooms", text="Rooms")
+        self.tree_Rooms.column("Rooms", anchor="center")
         self.tree_Rooms.place(x=673.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
-        self.tree_Time = ttk.Treeview(self, columns=("Time",), show="headings")
+        self.scrollbar_rooms = ttk.Scrollbar(self, orient="vertical", command=self.tree_Rooms.yview)
+        self.tree_Rooms.configure(yscrollcommand=self.scrollbar_rooms.set)
+        self.scrollbar_rooms.place(x=(673.0 + 350.0) * scale_x, y=596.0 * scale_y, width=15, height=380.0 * scale_y)
+
+        self.tree_Time = ttk.Treeview(self, columns=("Time",), show="headings", style="Custom.Treeview")
         self.tree_Time.heading("Time", text="Time")
+        self.tree_Time.column("Time", anchor="center")
         self.tree_Time.place(x=1088.0 * scale_x, y=596.0 * scale_y, width=350.0 * scale_x, height=380.0 * scale_y)
 
-        self.refresh_file_dropdown()
+        self.scrollbar_time = ttk.Scrollbar(self, orient="vertical", command=self.tree_Time.yview)
+        self.tree_Time.configure(yscrollcommand=self.scrollbar_time.set)
+        self.scrollbar_time.place(x=(1088.0 + 350.0) * scale_x, y=596.0 * scale_y, width=15, height=380.0 * scale_y)
 
-    def refresh_file_dropdown(self):
-        if not os.path.exists(UPLOAD_DIR):
-            os.makedirs(UPLOAD_DIR)
-        files = [f for f in os.listdir(UPLOAD_DIR) if f.endswith(".csv")]
-        self.course_dropdown['values'] = files
-        if files:
-            self.course_dropdown.set(files[-1])
 
-    def on_file_selected(self, event):
-        selected_file = self.course_dropdown.get()
-        file_path = os.path.join(UPLOAD_DIR, selected_file)
+        for tree in [self.tree_Course, self.tree_Faculty, self.tree_Perferences, self.tree_Rooms, self.tree_Time]:
+            tree.tag_configure("evenrow", background="#E6F2FF")
+            tree.tag_configure("oddrow", background="#FFFFFF")
+
+        self.populate_treeviews()  
+        
+    def populate_treeviews(self):
+        db = DatabaseManager()
+        db.start_session()
+
+        for tree in [self.tree_Course, self.tree_Faculty, self.tree_Perferences, self.tree_Rooms, self.tree_Time]:
+            tree.delete(*tree.get_children())
+
+        # Course
         try:
-            faculty_list, classroom_data, course_data, timeslot_data, preference_data = parse_csv_2(file_path)
-
-            self.controller.selected_file_path = file_path  
-            
-            self.tree_Course.delete(*self.tree_Course.get_children())
-            for course in course_data:
-                self.tree_Course.insert("", "end", values=(course['course_id'],))
-
-            self.tree_Faculty.delete(*self.tree_Faculty.get_children())
-            for faculty in faculty_list:
-                self.tree_Faculty.insert("", "end", values=(faculty.Name,))
-
-            self.tree_Perferences.delete(*self.tree_Perferences.get_children())
-            for pref in preference_data:
-                self.tree_Perferences.insert("", "end", values=(pref,))
-
-            self.tree_Rooms.delete(*self.tree_Rooms.get_children())
-            for room in classroom_data:
-                self.tree_Rooms.insert("", "end", values=(room['room_id'],))
-
-            self.tree_Time.delete(*self.tree_Time.get_children())
-            for timeslot in timeslot_data:
-                self.tree_Time.insert("", "end", values=(f"{timeslot['day']} {timeslot['start_time']}-{timeslot['end_time']}",))
+            courses = db.get_course()
+            for i, c in enumerate(courses):
+                tag = "evenrow" if i % 2 == 0 else "oddrow"
+                self.tree_Course.insert("", "end", values=(c.CourseID,), tags=(tag,))
 
         except Exception as e:
-            messagebox.showerror("Loading failed", f"Unable to load file content: {e}")
+            print(f"[Course Error] {e}")
+
+        # Faculty
+        try:
+            faculty_list = db.get_faculty()
+            for i, f in enumerate(faculty_list):
+                tag = "evenrow" if i % 2 == 0 else "oddrow"
+                self.tree_Faculty.insert("", "end", values=(f.Name,), tags=(tag,))
+        except Exception as e:
+            print(f"[Faculty Error] {e}")
+
+        # Preferences
+        try:
+            preferences = db.get_preferences()
+            for i, pref in enumerate(preferences):
+                summary = f"{pref.ProfessorName} | {pref.PreferenceType} | {pref.PreferenceValue}"
+                tag = "evenrow" if i % 2 == 0 else "oddrow"
+                self.tree_Perferences.insert("", "end", values=(summary,), tags=(tag,))
+        except Exception as e:
+            print(f"[Preference Error] {e}")
+
+
+        # Rooms
+        try:
+                rooms = db.get_classrooms()
+                for i, r in enumerate(rooms):
+                    tag = "evenrow" if i % 2 == 0 else "oddrow"
+                    self.tree_Rooms.insert("", "end", values=(r.RoomID,), tags=(tag,))
+        except Exception as e:
+            print(f"[Rooms Error] {e}")
+
+        # Timeslot
+        try:
+            timeslots = db.get_timeslot()
+            for i, t in enumerate(timeslots):
+                time_str = f"{t.Days} {t.StartTime}"
+                tag = "evenrow" if i % 2 == 0 else "oddrow"
+                self.tree_Time.insert("", "end", values=(time_str,), tags=(tag,))
+        except Exception as e:
+            print(f"[Time Error] {e}")
+
+        db.end_session()
+
+    def tkraise(self, *args, **kwargs):
+        super().tkraise(*args, **kwargs)
+        self.populate_treeviews()
+
+        # self.refresh_file_dropdown()
+
+    # def refresh_file_dropdown(self):
+    #     if not os.path.exists(UPLOAD_DIR):
+    #         os.makedirs(UPLOAD_DIR)
+    #     files = [f for f in os.listdir(UPLOAD_DIR) if f.endswith(".csv")]
+    #     self.course_dropdown['values'] = files
+    #     if files:
+    #         self.course_dropdown.set(files[-1])
+
+    # def on_file_selected(self, event):
+    #     selected_file = self.course_dropdown.get()
+    #     file_path = os.path.join(UPLOAD_DIR, selected_file)
+    #     try:
+    #         faculty_list, classroom_data, course_data, timeslot_data, preference_data = parse_csv_2(file_path)
+
+    #         self.controller.selected_file_path = file_path  
+            
+    #         self.tree_Course.delete(*self.tree_Course.get_children())
+    #         for course in course_data:
+    #             self.tree_Course.insert("", "end", values=(course['course_id'],))
+
+    #         self.tree_Faculty.delete(*self.tree_Faculty.get_children())
+    #         for faculty in faculty_list:
+    #             self.tree_Faculty.insert("", "end", values=(faculty.Name,))
+
+    #         self.tree_Perferences.delete(*self.tree_Perferences.get_children())
+    #         for pref in preference_data:
+    #             self.tree_Perferences.insert("", "end", values=(pref,))
+
+    #         self.tree_Rooms.delete(*self.tree_Rooms.get_children())
+    #         for room in classroom_data:
+    #             self.tree_Rooms.insert("", "end", values=(room['room_id'],))
+
+    #         self.tree_Time.delete(*self.tree_Time.get_children())
+    #         for timeslot in timeslot_data:
+    #             self.tree_Time.insert("", "end", values=(f"{timeslot['day']} {timeslot['start_time']}-{timeslot['end_time']}",))
+
+    #     except Exception as e:
+    #         messagebox.showerror("Loading failed", f"Unable to load file content: {e}")
 
 
 

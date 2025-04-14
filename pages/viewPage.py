@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-#from tktooltip import ToolTip
+from tktooltip import ToolTip
 from lib.CSV_Exporter import export_schedule_to_csv  # Import the export function
 
 # ---------------------------
@@ -110,7 +110,7 @@ class ViewPage(tk.Frame):
         button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
         button_7 = Button(self, image=button_image_7, borderwidth=0, highlightthickness=0,
                           command=lambda: print("button_7 clicked"), relief="flat")
-        #ToolTip(button_6, msg="Export Schedule to .csv", delay=1.0)
+        ToolTip(button_6, msg="Export Schedule to .csv", delay=1.0)
 
         # Table section
         self.columns = ("Course ID", "Day", "Time", "Professor", "Room")

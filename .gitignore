@@ -4,6 +4,10 @@
 
 #Ignore the build folder created when building the project
 build/
+build_venv/
+*.spec
+uploads/
+*.db
 
 #Ignore temporary files
 __pycache__/

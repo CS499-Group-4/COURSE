@@ -5,10 +5,11 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-#from tktooltip import ToolTip
+from tktooltip import ToolTip
 from lib.CSV_Parser import parse_csv_2
-from lib.DatabaseManager import DatabaseManager
-
+from lib.DatabaseManager import DatabaseManager, Course
+import tkinter.messagebox as mbox
+import re
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -144,65 +145,113 @@ class ViewPageFaculty(tk.Frame):
 #                           TABLE
 #———————————————————————————————————————————————————————
 
-        self.columns4 = ("Faculty",)
-        self.tree_Faculty = ttk.Treeview(self, columns=self.columns4, show="headings", height=1)
-        self.tree_Faculty.heading("Faculty", text="Faculty")
-        self.tree_Faculty.column("Faculty", width=int(350 * scale_x), anchor="center")
-        self.tree_Faculty.insert("", "end", values=("Dr. Smith",))
-        self.tree_Faculty.place(x=271.0 * scale_x, y=124.0 * scale_y,
-                                width=1150.0 * scale_x, height=700.0 * scale_y)
+        self.columns4 = ("Name", "Priority", "Class1", "Class2", "Class3", "Class4", "Class5")
+        self.tree_Faculty = ttk.Treeview(self, columns=self.columns4, show="headings", height=10)
+        for col in self.columns4:
+            self.tree_Faculty.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
+            self.tree_Faculty.column(col, width=int(1150 * scale_x)//len(self.columns4), anchor="center")
+        self.tree_Faculty.place(x=271.0 * scale_x, y=124.0 * scale_y, width=1150.0 * scale_x, height=700.0 * scale_y)
+        
+        self.tree_Faculty.bind("<Button-3>", self.show_context_menu)
 
-        # self.Faculty_entry = Entry(
-        #     self, bg="#DAEBFA", fg="#0A4578",
-        #     font=("Arial", int(18)), relief="flat",
-        #     insertbackground="#0A4578"
-        # )
-        # self.Faculty_entry.place(x=274.0 * scale_x, y=937.0 * scale_y,
-        #                            width=850.0 * scale_x, height=80.0 * scale_y)
+        self.scrollbar_faculty = ttk.Scrollbar(self, orient="vertical", command=self.tree_Faculty.yview)
+        self.tree_Faculty.configure(yscrollcommand=self.scrollbar_faculty.set)
+        self.scrollbar_faculty.place(x=271.0 * scale_x + 1150.0 * scale_x, y=124.0 * scale_y, width=15, height=700.0 * scale_y)
+
+        self.tree_Faculty.tag_configure("evenrow", background="#E6F2FF")
+        self.tree_Faculty.tag_configure("oddrow", background="#FFFFFF")
+
 
         def add_faculty():
-            name = entry.get().strip()  # Name field
-            priority = entry2.get().strip()  # Priority field
-            class_id1 = entry3.get().strip()  # Class ID 1
-            class_id2 = entry4.get().strip()  # Class ID 2 (optional)
-            class_id3 = entry5.get().strip()  # Class ID 3 (optional)
-            class_id4 = entry6.get().strip()  # Class ID 4 (optional)
+            name = entry.get().strip()
+            priority_str = entry2.get().strip()
+            class_id1 = entry3.get().strip()
+            class_id2 = entry4.get().strip()
+            class_id3 = entry5.get().strip()
+            class_id4 = entry6.get().strip()
 
-            # Ensure required fields are filled
-            if name and class_id1:
-                try:
-                    # Default priority to 0 if not provided
-                    priority = int(priority) if priority else 0
+            # Check for empty Professor name and missing Class ID 1
+            if not name:
+                mbox.showerror("Missing Field", "Professor name cannot be empty.")
+                return
+            if not class_id1:
+                mbox.showerror("Missing Field", "At least one class (Class ID 1) must be provided.")
+                return
 
-                    # Collect all class IDs and filter out empty ones
-                    class_ids = [class_id for class_id in [class_id1, class_id2, class_id3, class_id4] if class_id]
+            db = DatabaseManager()
+            db.start_session()
+            # Check for duplicate professor name (case-insensitive)
+            faculties = db.get_faculty()
+            if any(fac.Name.lower() == name.lower() for fac in faculties):
+                mbox.showerror("Duplicate Entry", "A professor with this name already exists in the database.")
+                db.end_session()
+                return
 
-                    # Add faculty to the database
-                    db = DatabaseManager()
-                    db.start_session()
-                    db.add_faculty_ui(name=name, priority=priority, class_ids=class_ids)
-                    db.end_session()
+            # Convert and validate priority
+            try:
+                priority = int(priority_str) if priority_str else 0
+            except ValueError:
+                mbox.showerror("Invalid Value", "Please enter a valid value (number >= 0) for the priority.")
+                db.end_session()
+                return
 
-                    # Add the faculty to the Treeview
-                    self.tree_Faculty.insert("", "end", values=(name,))
+            if priority < 0:
+                mbox.showerror("Invalid Priority", "Priority must be a non-negative value (number >= 0).")
+                db.end_session()
+                return
 
-                    # Clear the entry fields
-                    entry.delete(0, "end")
-                    entry2.delete(0, "end")
-                    entry3.delete(0, "end")
-                    entry4.delete(0, "end")
-                    entry5.delete(0, "end")
-                    entry6.delete(0, "end")
-                except Exception as e:
-                    print(f"Error adding faculty: {e}")
-            else:
-                print("Please fill in all required fields (Name and Class ID 1).")
+            # Function to standardize class IDs (e.g., "abc123" -> "ABC 123")
+            def standardize_class_id(cid):
+                match = re.match(r'([A-Za-z]+)\s*(\d+)', cid)
+                if match:
+                    return f"{match.group(1).upper()} {match.group(2)}"
+                return cid.upper()
+
+            # Process each class ID: class_id1 is required; default others to None if blank
+            class_id1 = standardize_class_id(class_id1)
+            class_id2 = standardize_class_id(class_id2) if class_id2.strip() else None
+            class_id3 = standardize_class_id(class_id3) if class_id3.strip() else None
+            class_id4 = standardize_class_id(class_id4) if class_id4.strip() else None
+
+            # For each non-None class, warn if the course doesn't exist in the database.
+            for cid in [class_id1, class_id2, class_id3, class_id4]:
+                if cid:
+                    existing_course = db.session.query(Course).filter_by(CourseID=cid).first()
+                    if not existing_course:
+                        mbox.showwarning(
+                            "Course Not Found",
+                            f"Course '{cid}' does not exist. The professor won't be assigned to this course unless added on the Courses page."
+                        )
+
+            # Prepare class IDs list, filtering out None for optional ones if desired
+            class_ids = [class_id1]
+            for cid in [class_id2, class_id3, class_id4]:
+                class_ids.append(cid)  # will be None if not provided
+
+            try:
+                db.add_faculty_ui(name=name, priority=priority, class_ids=class_ids)
+                db.end_session()
+
+                # Refresh the treeview
+                self.update_treeview()
+
+                # Clear the entry fields
+                entry.delete(0, "end")
+                entry2.delete(0, "end")
+                entry3.delete(0, "end")
+                entry4.delete(0, "end")
+                entry5.delete(0, "end")
+                entry6.delete(0, "end")
+            except Exception as e:
+                db.end_session()
+                mbox.showerror("Error Adding Faculty", f"Error adding faculty: {e}")
 
         btn13_img = scaled_photoimage(str(relative_to_assets("button_13.png")), scale_x, scale_y)
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0,
                        command=add_faculty)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
+        ToolTip(btn13, msg="Add new data to system", delay=1.0)
 
 
 #——————————————————————————————————————————————————
@@ -237,7 +286,16 @@ class ViewPageFaculty(tk.Frame):
         #----------------------------------------------------------------------------------------------------------------
 
 
-
+    def sort_treeview(self, col, reverse):
+        # Get values and item ids from treeview
+        l = [(self.tree_Faculty.set(k, col), k) for k in self.tree_Faculty.get_children('')]
+        try:
+            l.sort(key=lambda t: float(t[0]) if t[0].replace('.','',1).isdigit() else t[0], reverse=reverse)
+        except Exception:
+            l.sort(reverse=reverse)
+        for index, (val, k) in enumerate(l):
+            self.tree_Faculty.move(k, '', index)
+        self.tree_Faculty.heading(col, command=lambda: self.sort_treeview(col, not reverse))
 
 
 
@@ -254,25 +312,54 @@ class ViewPageFaculty(tk.Frame):
             self.tree_Faculty.insert("", "end", values=(name,))
             self.Faculty_entry.delete(0, "end")
 
-    # -----------------------------
-    # Load Faculty from Selected File
-    # -----------------------------
-    def load_faculty_from_file(self, file_path):
+
+    def update_treeview(self):
+        for item in self.tree_Faculty.get_children():
+            self.tree_Faculty.delete(item)
+        db = DatabaseManager()
+        db.start_session()
+        faculties = db.get_faculty()
+        db.end_session()
+        for i, fac in enumerate(faculties):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
+            self.tree_Faculty.insert("", "end", iid=fac.FacultyID, values=(
+                fac.Name,
+                fac.Priority,
+                fac.Class1,
+                fac.Class2,
+                fac.Class3,
+                fac.Class4,
+                fac.Class5
+            ), tags=(tag,))
+    
+    def show_context_menu(self, event):
+        item = self.tree_Faculty.identify_row(event.y)
+        if item:
+            menu = tk.Menu(self, tearoff=0)
+            menu.add_command(label="Delete", command=lambda: self.delete_item(item))
+            menu.post(event.x_root, event.y_root)
+    
+    def delete_item(self, item):
+        vals = self.tree_Faculty.item(item, 'values')  # (Name, Priority, Class1, Class2, Class3, Class4, Class5)
+        if not vals or len(vals) < 7:
+            print("Cannot determine faculty details.")
+            return
+        name, priority, cl1, cl2, cl3, cl4, cl5 = vals
         try:
-            faculty_list, _, _, _, _ = parse_csv_2(file_path, insert_into_db=False)
-            self.tree_Faculty.delete(*self.tree_Faculty.get_children())
-            for faculty in faculty_list:
-                self.tree_Faculty.insert("", "end", values=(faculty.Name,))
+            db = DatabaseManager()
+            db.start_session()
+            db.delete_faculty_by_values(name, priority, cl1, cl2, cl3, cl4, cl5)
+            db.end_session()
+            self.update_treeview()
         except Exception as e:
-            print(f"Error loading faculty data: {e}")
+            print(f"Error deleting faculty: {e}")
 
     # -----------------------------
     # Raise and Reload Faculty Table
     # -----------------------------
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
-        if hasattr(self.controller, "selected_file_path"):
-            self.load_faculty_from_file(self.controller.selected_file_path)
+        self.update_treeview()
 
 
 
