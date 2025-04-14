@@ -5,9 +5,9 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-from lib.CSV_Exporter import export_schedule_to_csv
-from lib.DatabaseManager import DatabaseManager  # Ensure DatabaseManager is imported
-#from tktooltip import ToolTip
+from lib.CSV_Exporter import export_schedule_to_csv_and_pdf
+from lib.DatabaseManager import DatabaseManager, Schedule, Course, TimeSlot, Faculty, Classroom
+from tktooltip import ToolTip
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -107,7 +107,7 @@ class ExportPage(tk.Frame):
         # image_2 = scaled_photoimage(str(relative_to_assets("image_2.png")), scale_x, scale_y)
         # canvas.create_image(2050.0 * scale_x, 70.0 * scale_y, image=image_2)
         # canvas.image = image_2
-        # #ToolTip(image_2, msg="Click to Search Schedule", delay=1.0)
+        # #ToolTip(image_2, msg="Click to Search Schedule", delay=0.5)
 # ______________________________________________________________MAYBE_____________________________________________________________
 
 
@@ -130,9 +130,9 @@ class ExportPage(tk.Frame):
         )
         button_6.image = button_image_6
         button_6.place(x=1167.0 * scale_x, y=864.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
-        #ToolTip(button_6, msg="Export Schedule to .csv", delay=1.0)
+        ToolTip(button_6, msg="Export Schedule to .csv", delay=0.5)
 
-        # Dropdown Menu 1: Sort Options
+        # Dropdown Menu 1: Sort Options (only Faculty, Room, and Department)
         sort_options = ["All", "Faculty", "Room", "Department"]
         self.sort_var = tk.StringVar()
         self.sort_var.set("All")  # Default value
@@ -144,6 +144,8 @@ class ExportPage(tk.Frame):
         self.dropdown2_var.set("N/A")  # Default value
         self.dropdown2 = ttk.OptionMenu(self, self.dropdown2_var, "N/A")
         self.dropdown2.place(x=1204.0 * scale_x, y=157.0 * scale_y, width=150.0 * scale_x, height=55.0 * scale_y)
+        # Refresh table when second dropdown changes
+        self.dropdown2_var.trace("w", lambda *args: self.populate_schedule())
 
         # Table section
         self.columns = ("Course ID", "Day", "Time", "Professor", "Room")
@@ -152,9 +154,8 @@ class ExportPage(tk.Frame):
         for col in self.columns:
             tree.heading(col, text=col)
             tree.column(col, width=30, anchor="center")
-        self.courses = []  # Save all courses for filtering
-        for course in self.courses:
-            tree.insert("", "end", values=course)
+        # Initially empty; it will be populated when the page is shown
+        self.courses = []  
         tree_scroll = ttk.Scrollbar(self, orient="vertical", command=tree.yview)
         tree.configure(yscrollcommand=tree_scroll.set)
         canvas.create_window(240, 9, width=801, height=1026, anchor="nw", window=tree)
@@ -162,19 +163,56 @@ class ExportPage(tk.Frame):
         self.tree = tree
         
         canvas.scale("all", 0, 0, scale_x, scale_y)
+    
+    def populate_schedule(self):
+        """
+        Query the full schedule from the database and insert rows into the treeview.
+        Apply additional filtering based on the drop down selections.
+        """
+        try:
+            query = self.db_manager.session.query(
+                Course.CourseID,
+                TimeSlot.Days,
+                TimeSlot.StartTime,
+                TimeSlot.EndTime,
+                Faculty.Name,
+                Classroom.RoomID
+            ).join(
+                Schedule, Schedule.Course == Course.CourseID
+            ).join(
+                TimeSlot, Schedule.TimeSlot == TimeSlot.SlotID
+            ).join(
+                Faculty, Schedule.Professor == Faculty.FacultyID
+            ).join(
+                Classroom, Schedule.Classroom == Classroom.RoomID
+            )
+            filter_type = self.sort_var.get()      # e.g., "Faculty", "Room", "Department" or "All"
+            filter_value = self.dropdown2_var.get()  # value selected in dropdown2
+            if filter_type != "All" and filter_value != "N/A":
+                if filter_type == "Faculty":
+                    query = query.filter(Faculty.Name == filter_value)
+                elif filter_type == "Room":
+                    query = query.filter(Classroom.RoomID == filter_value)
+                elif filter_type == "Department":
+                    query = query.filter(Course.Department == filter_value)
+            results = query.all()
+        except Exception as e:
+            print("[ERROR] Querying schedule failed:", e)
+            results = []
+        
+        # Clear the treeview before inserting new rows.
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        
+        # Insert each row.
+        for course_id, days, start_time, end_time, faculty_name, room_id in results:
+            time_str = f"{start_time}-{end_time}"
+            self.tree.insert("", "end", values=(course_id, days, time_str, faculty_name, room_id))
 
-
-
-#******************************************************************************************************************
-        #search function
-    # def filter_table(self, event):
-    #     query = self.entry_1.get().lower()
-    #     for item in self.tree.get_children():
-    #         self.tree.delete(item)
-    #     for row in self.courses:
-    #         if any(query in str(cell).lower() for cell in row):
-    #             self.tree.insert("", "end", values=row)
-#******************************************************************************************************************
+    def tkraise(self, *args, **kwargs):
+        # When the page is shown, populate the schedule.
+        super().tkraise(*args, **kwargs)
+        self.populate_schedule()
 
     def export_schedule(self):
         # Prompt the user to select a file location
@@ -190,31 +228,29 @@ class ExportPage(tk.Frame):
 
             # Call the export function with filters
             try:
-                export_schedule_to_csv(output_file, filter_type=filter_type, filter_value=filter_value)
+                export_schedule_to_csv_and_pdf(output_file, filter_type=filter_type, filter_value=filter_value)
                 print(f"[INFO] Schedule successfully exported to {output_file}")
             except Exception as e:
                 print(f"[ERROR] Failed to export schedule: {e}")
 
-    def update_dropdown2(self, selected_option):            
-        # Update the second dropdown menu based on the selection in the first dropdown.
+    def update_dropdown2(self, selected_option):
+        # Update the second dropdown menu options based on the first dropdown.
         if selected_option == "All":
-            # Set Drop2 to "N/A"
             self.update_dropdown2_options(["N/A"])
         elif selected_option == "Faculty":
-            # Query the database for faculty names
             faculty = self.db_manager.get_faculty()
             faculty_names = [f.Name for f in faculty]
             self.update_dropdown2_options(faculty_names)
         elif selected_option == "Room":
-            # Query the database for room IDs
             classrooms = self.db_manager.get_classrooms()
             room_ids = [c.RoomID for c in classrooms]
             self.update_dropdown2_options(room_ids)
         elif selected_option == "Department":
-            # Query the database for unique departments
             courses = self.db_manager.get_course()
-            departments = list(set(c.Department for c in courses))  # Remove duplicates
+            departments = list(set(c.Department for c in courses))
             self.update_dropdown2_options(departments)
+        # Refresh the table
+        self.populate_schedule()
 
     def update_dropdown2_options(self, options):
         # Update the options in the second dropdown menu.

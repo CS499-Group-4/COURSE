@@ -251,7 +251,7 @@ class ViewPageFaculty(tk.Frame):
                        command=add_faculty)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
-        ToolTip(btn13, msg="Add new data to system", delay=1.0)
+        ToolTip(btn13, msg="Add new data to system", delay=0.5)
 
 
 #——————————————————————————————————————————————————
@@ -263,26 +263,36 @@ class ViewPageFaculty(tk.Frame):
         canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Name :", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=375.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        ToolTip(entry, msg="Enter Professor Name \nExample: Dr. Hozier", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 830.0* scale_x,869.0 * scale_y, anchor="nw", text="Relative Priority (>= 0):", fill="#094478", font=("Jomolhari Regular",9))
         entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry2.place(x=1062.0 * scale_x, y=860.0 * scale_y, width=320 * scale_x, height=50 * scale_y)
+        ToolTip(entry2, msg="Enter Professor relative Priority \nExample: 1", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 324.0* scale_x,936.0 * scale_y, anchor="nw", text="Class ID 1", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=280.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        ToolTip(entry3, msg="Add file to system", delay=0.5)
+        ToolTip(entry3, msg="Enter Assigned Class ID \nExample: CS 127", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 559.0* scale_x, 936.0 * scale_y, anchor="nw", text="Class ID 2", fill="#094478", font=("Jomolhari Regular", 9))
         entry4 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry4.place(x=515.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        ToolTip(entry4, msg="Add file to system", delay=0.5)
+        ToolTip(entry4, msg="Enter Assigned Class ID \nExample: CS 232", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 794.0* scale_x,936.0 * scale_y, anchor="nw", text="Class ID 3", fill="#094478", font=("Jomolhari Regular", 9))
         entry5 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry5.place(x=750.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        ToolTip(entry5, msg="Add file to system", delay=0.5)
+        ToolTip(entry5, msg="Enter Assigned Class ID \nExample: CS 101", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 1029.0* scale_x,936.0 * scale_y, anchor="nw", text="Class ID 4", fill="#094478", font=("Jomolhari Regular", 9))
         entry6 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry6.place(x=985.0 * scale_x, y=968.0 * scale_y, width=190 * scale_x, height=50 * scale_y)
+        ToolTip(entry6, msg="Add file to system", delay=0.5)
+        ToolTip(entry6, msg="Enter Assigned Class ID \nExample: CS 128", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
 
 
