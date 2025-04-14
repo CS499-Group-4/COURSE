@@ -189,7 +189,7 @@ class SettingPage(tk.Frame):
                            command=lambda: print("button_16 clicked"), relief="flat")
         button_16.image = button_image_16
         button_16.place(x=377.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
-        #ToolTip(button_16, msg="Restore to Default Settings", delay=1.0)
+        #ToolTip(button_16, msg="Restore to Default Settings", delay=0.5)
         
         # Save Settings Button
         button_image_17 = scaled_photoimage(str(relative_to_assets("button_17.png")), scale_x, scale_y)
@@ -197,7 +197,7 @@ class SettingPage(tk.Frame):
                            command=lambda: print("button_17 clicked"), relief="flat")
         button_17.image = button_image_17
         button_17.place(x=979.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
-        #ToolTip(button_17, msg="Save Preferences", delay=1.0)
+        #ToolTip(button_17, msg="Save Preferences", delay=0.5)
         
         #logo iamge
         img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)

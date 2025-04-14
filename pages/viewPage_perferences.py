@@ -232,7 +232,7 @@ class ViewPagePreference(tk.Frame):
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_preference)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
-        ToolTip(btn13, msg="Add new data to system", delay=1.0)
+        ToolTip(btn13, msg="Add new data to system", delay=0.5)
 
 #——————————————————————————————————————————————————
 #          USER add PART
@@ -243,7 +243,7 @@ class ViewPagePreference(tk.Frame):
         canvas.create_text(  278.0* scale_x,  883.0 * scale_y, anchor="nw", text="Name     ：", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=412.0 * scale_x, y=874.0 * scale_y, width=280 * scale_x, height=50 * scale_y)
-        ToolTip(entry, msg="Enter Name of Professor with a Preference \nExample: Dr. Beats", delay=1.0)
+        ToolTip(entry, msg="Enter Name of Professor with a Preference \nExample: Dr. Beats", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 707.0* scale_x,883.0 * scale_y, anchor="nw", text="Preference Type：", fill="#094478", font=("Jomolhari Regular",9))
         preference_options = ["Room", "Day", "Time"]
@@ -254,7 +254,7 @@ class ViewPagePreference(tk.Frame):
         canvas.create_text( 273.0* scale_x,969.0 * scale_y, anchor="nw", text="Preference ：", fill="#094478", font=("Jomolhari Regular",9))
         entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry3.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
-        ToolTip(entry3, msg="Enter Preference \nExample: MW or Evening", delay=1.0)
+        ToolTip(entry3, msg="Enter Preference \nRoom Example: MW \n Time Example: Evening", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         self.tree_Perferences.bind("<Button-3>", self.show_context_menu)
 
