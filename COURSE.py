@@ -47,7 +47,6 @@ class MainApp(tk.Tk):
         self.geometry("800x600")
 
         self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
-        self.bind("<Configure>", self.rescale)
         
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
