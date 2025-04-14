@@ -295,6 +295,9 @@ class CourseScheduler:
         # Retrieve the schedule
         schedule = self.session.query(Schedule).all()
 
+        # Dictionary to track room bookings by day and time
+        room_bookings = {}
+
         for entry in schedule:
             # Get faculty, timeslot, room, and course details
             professor = self.session.query(Faculty).filter(Faculty.FacultyID == entry.Professor).first()
@@ -386,6 +389,18 @@ class CourseScheduler:
                     "assigned_room": room.RoomID,
                     "required_rooms": required_rooms
                 })
+
+            # Check for double-booked rooms
+            booking_key = (room.RoomID, frozenset(timeslot.Days), timeslot.StartTime, timeslot.EndTime)
+            if booking_key in room_bookings:
+                conflicts.append({
+                    "type": "Double Booked Room",
+                    "room": room.RoomID,
+                    "conflicting_courses": [room_bookings[booking_key], course.CourseID],
+                    "timeslot": f"{timeslot.Days} {timeslot.StartTime}-{timeslot.EndTime}"
+                })
+            else:
+                room_bookings[booking_key] = course.CourseID
 
         return conflicts
 

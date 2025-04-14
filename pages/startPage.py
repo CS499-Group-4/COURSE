@@ -5,8 +5,10 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
+from tkinter import messagebox  # Import the messagebox module
 from tktooltip import ToolTip
 from lib.DatabaseManager import Schedule, Faculty, Course, Classroom, TimeSlot
+
 #import the generate_scheduler() function from lib/scheduler.py
 from lib.Scheduler import CourseScheduler
 
@@ -72,13 +74,14 @@ def update_conflict_treeview():
     # Retrieve conflicts from the scheduler
     conflicts = scheduler.validate_faculty_preferences()
 
-    # Populate the conflict tree view with a numerical order
-    for index, conflict in enumerate(conflicts, start=1):
+    # Populate the conflict tree view
+    for conflict in conflicts:
         conflict_type = conflict.get("type", "Unknown")
         course = conflict.get("course", "N/A")
+        professor = conflict.get("professor", "N/A")  # Get the professor's name
 
-        # Insert the conflict into the tree view with the index as the "Conflict" column
-        conflict_tree.insert("", "end", values=(index, conflict_type, course))
+        # Insert the conflict into the tree view
+        conflict_tree.insert("", "end", values=(professor, conflict_type, course))
 
 
 def make_treeview_editable():
@@ -171,11 +174,11 @@ def make_treeview_editable():
         # Bind the click event to the root window
         tree.winfo_toplevel().bind("<Button-1>", close_combobox, add="+")
 
-        # # Unbind the click event when the Combobox is destroyed
-        # def on_destroy(event):
-        #     tree.winfo_toplevel().unbind("<Button-1>", close_combobox)
+        # Unbind the click event when the Combobox is destroyed
+        def on_destroy(event):
+            tree.winfo_toplevel().unbind("<Button-1>", close_combobox)
 
-        # combobox.bind("<Destroy>", on_destroy)
+        combobox.bind("<Destroy>", on_destroy)
 
     # Bind the double-click event to the Treeview
     tree.bind("<Double-1>", on_double_click)
@@ -185,56 +188,123 @@ def make_treeview_editable():
 
 def update_database_from_treeview():
     print("[INFO] Updating database with Treeview data...")
+    has_updates = False  # Track if any updates are made
+
     for row in tree.get_children():
+        # Check if the row has the "edited" tag
+        if "edited" not in tree.item(row, "tags"):
+            continue  # Skip rows that haven't been edited
+
         # Get the values from the Treeview row
         row_values = tree.item(row, "values")
         course_id, day, time, professor, room = row_values
 
-        print(f"[INFO] Processing row: Course ID: {course_id}, Day: {day}, Time: {time}, Professor: {professor}, Room: {room}")
+        print(f"[INFO] Processing edited row: Course ID: {course_id}, Day: {day}, Time: {time}, Professor: {professor}, Room: {room}")
 
-        # Update the database
+        # Retrieve the current schedule entry
         schedule_entry = scheduler.db.session.query(Schedule).filter(Schedule.Course == course_id).first()
-        if schedule_entry:
-            # Update the TimeSlot
-            timeslot = scheduler.db.session.query(TimeSlot).filter(
-                TimeSlot.Days == day, TimeSlot.StartTime == time
-            ).first()
-            if timeslot:
-                schedule_entry.TimeSlot = timeslot.SlotID
-                print(f"[INFO] Updated TimeSlot to SlotID {timeslot.SlotID} for Course ID {course_id}.")
-            else:
-                print(f"[WARN] No matching TimeSlot found for Day: {day}, Time: {time}.")
+        if not schedule_entry:
+            warning_message = f"No matching Schedule entry found for Course ID: {course_id}."
+            print(f"[WARN] {warning_message}")
+            messagebox.showwarning("Update Warning", warning_message)
+            continue
 
-            # Update the Professor
-            professor_entry = scheduler.db.session.query(Faculty).filter(Faculty.Name == professor).first()
-            if professor_entry:
-                schedule_entry.Professor = professor_entry.FacultyID
-                print(f"[INFO] Updated Professor to FacultyID {professor_entry.FacultyID} for Course ID {course_id}.")
-            else:
-                print(f"[WARN] No matching Professor found for Name: {professor}.")
+        # Perform conflict checks before making any updates
+        # Check for TimeSlot conflicts
+        timeslot = scheduler.db.session.query(TimeSlot).filter(
+            TimeSlot.Days == day, TimeSlot.StartTime == time
+        ).first()
+        if not timeslot:
+            print(f"[WARN] No matching TimeSlot found for Day: {day}, Time: {time}.")
+            continue
 
-            # Update the Room
-            room_entry = scheduler.db.session.query(Classroom).filter(Classroom.RoomID == room).first()
-            if room_entry:
-                schedule_entry.Classroom = room_entry.RoomID
-                print(f"[INFO] Updated Classroom to RoomID {room_entry.RoomID} for Course ID {course_id}.")
-            else:
-                print(f"[WARN] No matching Room found for RoomID: {room}.")
+        # Check for Professor conflicts
+        professor_entry = scheduler.db.session.query(Faculty).filter(Faculty.Name == professor).first()
+        if professor_entry:
+            conflicting_schedule = scheduler.db.session.query(Schedule).join(TimeSlot).filter(
+                Schedule.Professor == professor_entry.FacultyID,
+                TimeSlot.StartTime == time,
+                Schedule.SchedID != schedule_entry.SchedID  # Exclude the current entry
+            ).all()  # Retrieve all potential conflicts
 
+            for conflict in conflicting_schedule:
+                conflict_timeslot = scheduler.db.session.query(TimeSlot).filter(TimeSlot.SlotID == conflict.TimeSlot).first()
+                if conflict_timeslot:
+                    # Check for overlapping days
+                    current_days = set(day for day in day)  # Convert current days to a set
+                    conflict_days = set(day for day in conflict_timeslot.Days)  # Convert conflict days to a set
+                    if current_days & conflict_days:  # Check for intersection
+                        error_message = (
+                            f"Conflict detected: Professor {professor} is already assigned to "
+                            f"Course ID {conflict.Course} at overlapping days {current_days & conflict_days} "
+                            f"and Time: {time}. Update aborted."
+                        )
+                        print(f"[ERROR] {error_message}")
+                        messagebox.showerror("Update Error", error_message)
+                        continue
         else:
-            print(f"[WARN] No matching Schedule entry found for Course ID: {course_id}.")
+            warning_message = f"No matching Professor found for Name: {professor}."
+            print(f"[WARN] {warning_message}")
+            messagebox.showwarning("Update Warning", warning_message)
+            continue
+
+        # Check for Room conflicts and capacity
+        room_entry = scheduler.db.session.query(Classroom).filter(Classroom.RoomID == room).first()
+        if room_entry:
+            course_entry = scheduler.db.session.query(Course).filter(Course.CourseID == course_id).first()
+            if course_entry and course_entry.MaxEnrollment > room_entry.Capacity:
+                error_message = (
+                    f"Room capacity exceeded: Room {room} has a maximum capacity of {room_entry.Capacity}, "
+                    f"but Course {course_id} requires {course_entry.MaxEnrollment}. Update aborted."
+                )
+                print(f"[ERROR] {error_message}")
+                messagebox.showerror("Update Error", error_message)
+                continue
+
+            conflicting_schedule = scheduler.db.session.query(Schedule).join(TimeSlot).filter(
+                Schedule.Classroom == room_entry.RoomID,
+                TimeSlot.Days == day,
+                TimeSlot.StartTime == time,
+                Schedule.SchedID != schedule_entry.SchedID  # Exclude the current entry
+            ).first()
+
+            if conflicting_schedule:
+                error_message = (
+                    f"Conflict detected: Room {room} is already assigned to "
+                    f"Course ID {conflicting_schedule.Course} at Day: {day}, Time: {time}. "
+                    f"Update aborted."
+                )
+                print(f"[ERROR] {error_message}")
+                messagebox.showerror("Update Error", error_message)
+                continue
+        else:
+            warning_message = f"No matching Room found for RoomID: {room}."
+            print(f"[WARN] {warning_message}")
+            messagebox.showwarning("Update Warning", warning_message)
+            continue
+
+        # If no conflicts are detected, proceed with the updates
+        schedule_entry.TimeSlot = timeslot.SlotID
+        schedule_entry.Professor = professor_entry.FacultyID
+        schedule_entry.Classroom = room_entry.RoomID
+        print(f"[INFO] Updated Schedule for Course ID {course_id}: TimeSlot={timeslot.SlotID}, "
+              f"Professor={professor_entry.FacultyID}, Room={room_entry.RoomID}.")
+        has_updates = True
 
         # Remove the 'edited' tag from the row
         tree.item(row, tags=())
 
-    # Commit the changes to the database
-    scheduler.db.safe_commit()
-    print("[INFO] Database update complete.")
+    if has_updates:
+        # Commit the changes to the database only if updates were made
+        scheduler.db.safe_commit()
+        print("[INFO] Database update complete.")
 
-    # Run conflict detection again and update the conflict tree view
-    print("[INFO] Running conflict detection...")
-    update_conflict_treeview()
-    print("[INFO] Conflict tree view updated.")
+        # Run conflict detection again and update the conflict tree view
+        print("[INFO] Running conflict detection...")
+        update_conflict_treeview()
+        print("[INFO] Conflict tree view updated.")
+    else:
+        print("[INFO] No changes detected. Database update skipped.")
 
 
 # ---------------------------
@@ -254,12 +324,12 @@ class StartPage(tk.Frame):
         new_width, new_height = 800, 600
         scale_x, scale_y = new_width / orig_width, new_height / orig_height
 
-        canvas = Canvas(self, bg="#FFFFFF", height=orig_height, width=orig_width,
+        canvas = Canvas(self, bg="#FFFFFF", height=orig_width, width=orig_height,
                         bd=0, highlightthickness=0, relief="ridge")
         canvas.place(x=0, y=0)
         
         canvas.create_rectangle(0.0, 1.0, 235.0, 1042.0, fill="#79BCF7", outline="")
-        canvas.create_rectangle(918.0 , 1.0, 1458.0 ,1042.0,fill="#DAEBF9",outline="")
+        
 # Navigation button: switch page
        # ----------------------------HomePage------------------------------------------
         btn5_img = scaled_photoimage(str(relative_to_assets("button_5.png")), scale_x, scale_y)
@@ -324,12 +394,12 @@ class StartPage(tk.Frame):
         
 
         #conflict_tree section
-        conflict_columns = ("Conflict", "Type", "Course")
+        conflict_columns = ("Faculty", "Type", "Course")
         global conflict_tree
         conflict_tree = ttk.Treeview(self, columns=conflict_columns, show="headings")
         for col in conflict_columns:
             conflict_tree.heading(col, text=col)
-            conflict_tree.column(col, width=150, anchor="center")
+            conflict_tree.column(col, width=80, anchor="center")
         canvas.create_window(950.0, 380.0, anchor="nw", width=450.0, height=350.0, window=conflict_tree)
         conflict_scroll = ttk.Scrollbar(self, orient="vertical", command=conflict_tree.yview)
         conflict_tree.configure(yscrollcommand=conflict_scroll.set)
@@ -347,12 +417,12 @@ class StartPage(tk.Frame):
         # button_8.place(x=1206.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
         
         # Automatically Resolve Button
-        button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), scale_x, scale_y)
-        button_8 = Button(self, image=button_image_8, borderwidth=0, highlightthickness=0,
-                          command=lambda: print("button_8 clicked"), relief="flat")
-        button_8.image = button_image_8
-        button_8.place(x=1090.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
-        ToolTip(button_8, msg="Resolve All Conflicts", delay=1.0)
+        #button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), scale_x, scale_y)
+        #button_8 = Button(self, image=button_image_8, borderwidth=0, highlightthickness=0,
+        #                  command=lambda: print("button_8 clicked"), relief="flat")
+        #button_8.image = button_image_8
+        #button_8.place(x=1090.0 * scale_x, y=737.0 * scale_y, width=200.0 * scale_x, height=65.0 * scale_y)
+        #ToolTip(button_8, msg="Resolve All Conflicts", delay=1.0)
 
 
 
