@@ -107,7 +107,7 @@ class ExportPage(tk.Frame):
         # image_2 = scaled_photoimage(str(relative_to_assets("image_2.png")), scale_x, scale_y)
         # canvas.create_image(2050.0 * scale_x, 70.0 * scale_y, image=image_2)
         # canvas.image = image_2
-        # #ToolTip(image_2, msg="Click to Search Schedule", delay=1.0)
+        # #ToolTip(image_2, msg="Click to Search Schedule", delay=0.5)
 # ______________________________________________________________MAYBE_____________________________________________________________
 
 
@@ -130,7 +130,7 @@ class ExportPage(tk.Frame):
         )
         button_6.image = button_image_6
         button_6.place(x=1167.0 * scale_x, y=864.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
-        ToolTip(button_6, msg="Export Schedule to .csv", delay=1.0)
+        ToolTip(button_6, msg="Export Schedule to .csv", delay=0.5)
 
         # Dropdown Menu 1: Sort Options (only Faculty, Room, and Department)
         sort_options = ["All", "Faculty", "Room", "Department"]
