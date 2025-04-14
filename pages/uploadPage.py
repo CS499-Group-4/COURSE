@@ -320,8 +320,6 @@ class UploadPage(tk.Frame):
         if getattr(self.controller, "db_initialized", False):
             try:
                 view_page = self.controller.frames.get("ViewPageOverall")
-                if view_page:
-                    view_page.refresh_file_dropdown()
             except Exception as e:
                 print("Failed to refresh view page:", e)
         else:
