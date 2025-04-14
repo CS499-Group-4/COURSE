@@ -167,8 +167,33 @@ class CourseScheduler:
     # ============================
     # Checks if a room is already occupied during a given time slot.
     def is_room_occupied(self, room, timeslot):
-        return self.session.query(Schedule).filter( 
-            and_(Schedule.Classroom == room.RoomID, Schedule.TimeSlot == timeslot.SlotID)).count() > 0 
+        # Query all schedules for the room
+        conflicting_schedules = self.session.query(Schedule).filter(
+            Schedule.Classroom == room.RoomID
+        ).all()
+
+        # Check for conflicts with existing schedules
+        for schedule in conflicting_schedules:
+            existing_timeslot = self.session.query(TimeSlot).filter(
+                TimeSlot.SlotID == schedule.TimeSlot
+            ).first()
+
+            # Check if the days overlap
+            existing_days_set = set(existing_timeslot.Days)  # e.g., "MWF" → {'M', 'W', 'F'}
+            current_days_set = set(timeslot.Days)  # e.g., "MW" → {'M', 'W'}
+            if existing_days_set & current_days_set:  # Check if there is any overlap in days
+                # Check if the times overlap
+                existing_start = datetime.strptime(existing_timeslot.StartTime, "%H:%M")
+                existing_end = datetime.strptime(existing_timeslot.EndTime, "%H:%M")
+                current_start = datetime.strptime(timeslot.StartTime, "%H:%M")
+                current_end = datetime.strptime(timeslot.EndTime, "%H:%M")
+
+                if (current_start < existing_end and current_end > existing_start):  # Time overlap
+                    print(f"Room {room.RoomID} is occupied during {existing_timeslot.Days} "
+                          f"{existing_timeslot.StartTime}-{existing_timeslot.EndTime}")
+                    return True
+
+        return False
 
     # ============================
     # METHOD: generate_schedule
@@ -180,7 +205,7 @@ class CourseScheduler:
 
         # Iterate over each course to assign it
         for course in sorted_courses:
-            print(f"Scheduling: CourseID: {course.CourseID}, MaxEnrollment: {course.MaxEnrollment}") # Debugging output
+            print(f"Scheduling: CourseID: {course.CourseID}, MaxEnrollment: {course.MaxEnrollment}")  # Debugging output
             for professor in (p for p in all_faculty if course.CourseID in (p.Class1, p.Class2, p.Class3, p.Class4, p.Class5)):  # Get professors for the course
                 preferred_timeslots = self.get_preferred_slots(professor)  # Use get_preferred_slots to get preferred time slots for the professor
 
@@ -195,6 +220,10 @@ class CourseScheduler:
 
                 # Check preferred time slots and required rooms
                 for slot in preferred_timeslots:
+                    if self.is_professor_occupied(professor, slot):  # Check if the professor is already occupied
+                        print(f"Professor {professor.Name} is occupied during {slot.Days} {slot.StartTime}-{slot.EndTime}")
+                        continue
+
                     for room_id in required_rooms:
                         room = self.session.query(Classroom).filter(Classroom.RoomID == room_id).first()  # Get the room object
                         if room and room.Department == course.Department:  # Check if the room matches the course's department
@@ -208,6 +237,10 @@ class CourseScheduler:
                 # If no required room is available, find any suitable room within preferred time slots
                 if not final_timeslot:
                     for slot in preferred_timeslots:  # Iterate over preferred timeslots again
+                        if self.is_professor_occupied(professor, slot):  # Check if the professor is already occupied
+                            print(f"Professor {professor.Name} is occupied during {slot.Days} {slot.StartTime}-{slot.EndTime}")
+                            continue
+
                         for room in self.db.get_classrooms():  # Get all classrooms
                             if room.Department == course.Department:  # Check if the room matches the course's department
                                 if room.Capacity >= course.MaxEnrollment and not self.is_room_occupied(room, slot):  # Check if the room is available
@@ -219,20 +252,13 @@ class CourseScheduler:
 
                 # If no preferred time slots are available, skip the assignment
                 if not final_timeslot:
-                    print(f"FAILED TO ASSIGN: CourseID: {course.CourseID}, Professor: {professor.Name} (No preferred time slots available)") # Debugging output
+                    print(f"FAILED TO ASSIGN: CourseID: {course.CourseID}, Professor: {professor.Name} (No preferred time slots available)")  # Debugging output
                     continue
-
-                print(f"Assigning CourseID: {course.CourseID} to Professor: {professor.Name}") # Debugging output
-                print(f"Preferred Time Slots: {[slot.StartTime + '-' + slot.EndTime for slot in preferred_timeslots]}") # Debugging output
-                if final_timeslot:
-                    print(f"Assigned Timeslot: {final_timeslot.StartTime}-{final_timeslot.EndTime}") # Debugging output
-                else:
-                    print(f"Failed to assign preferred timeslot for CourseID: {course.CourseID}") # Debugging output
 
                 # Commit to the schedule table
                 if final_timeslot and final_room:  # If a suitable timeslot and room are found
                     self.db.add_schedule(final_timeslot, professor, course, final_room)  # Add to the schedule
-                    print(f"ASSIGNED: CourseID: {course.CourseID}, Professor: {professor.Name}, "  # Debugging output
+                    print(f"ASSIGNED: CourseID: {course.CourseID}, Professor: {professor.Name}, "
                           f"Timeslot: {final_timeslot.Days} {final_timeslot.StartTime}-{final_timeslot.EndTime}, "
                           f"Room: {final_room.RoomID}")
                 else:
@@ -258,4 +284,108 @@ class CourseScheduler:
             formatted_schedule.append([entry.Course, timeslot_days, timeslot_starttime, professor_name, entry.Classroom]) # Append the formatted entry to the list
 
         return formatted_schedule # Return the formatted schedule
+
+    # ============================
+    # METHOD: validate_faculty_preferences
+    # ============================
+    # Validates if the assigned schedule respects the faculty's preferences for rooms, times, and days.
+    def validate_faculty_preferences(self):
+        conflicts = []  # List to store conflicts
+
+        # Retrieve the schedule
+        schedule = self.session.query(Schedule).all()
+
+        for entry in schedule:
+            # Get faculty, timeslot, room, and course details
+            professor = self.session.query(Faculty).filter(Faculty.FacultyID == entry.Professor).first()
+            timeslot = self.session.query(TimeSlot).filter(TimeSlot.SlotID == entry.TimeSlot).first()
+            room = self.session.query(Classroom).filter(Classroom.RoomID == entry.Classroom).first()
+            course = self.session.query(Course).filter(Course.CourseID == entry.Course).first()
+
+            # Retrieve faculty preferences
+            room_preferences = self.session.query(Preference).filter(
+                Preference.FacultyID == professor.FacultyID,
+                Preference.PreferenceType == "Room"
+            ).all()
+            time_preferences = self.session.query(Preference).filter(
+                Preference.FacultyID == professor.FacultyID,
+                Preference.PreferenceType == "Time"
+            ).all()
+            day_preferences = self.session.query(Preference).filter(
+                Preference.FacultyID == professor.FacultyID,
+                Preference.PreferenceType == "Day"
+            ).all()
+
+            # Check room preference
+            preferred_rooms = [pref.PreferenceValue for pref in room_preferences]
+            if preferred_rooms and room.RoomID not in preferred_rooms:
+                conflicts.append({
+                    "type": "Room Pref",
+                    "course": course.CourseID,
+                    "professor": professor.Name,
+                    "assigned_room": room.RoomID,
+                    "preferred_rooms": preferred_rooms
+                })
+
+            # Check time preference
+            preferred_times = []
+            for time_pref in time_preferences:
+                if time_pref.PreferenceValue == "Morning":
+                    preferred_times.append(("00:00", "12:00"))
+                elif time_pref.PreferenceValue == "Afternoon":
+                    preferred_times.append(("12:00", "17:00"))
+                elif time_pref.PreferenceValue == "Evening":
+                    preferred_times.append(("17:00", "23:59"))
+
+            assigned_start = datetime.strptime(timeslot.StartTime, "%H:%M")
+            assigned_end = datetime.strptime(timeslot.EndTime, "%H:%M")
+            time_conflict = True
+            for start, end in preferred_times:
+                pref_start = datetime.strptime(start, "%H:%M")
+                pref_end = datetime.strptime(end, "%H:%M")
+                if pref_start <= assigned_start and assigned_end <= pref_end:
+                    time_conflict = False
+                    break
+
+            if time_conflict:
+                conflicts.append({
+                    "type": "Time Pref",
+                    "course": course.CourseID,
+                    "professor": professor.Name,
+                    "assigned_timeslot": f"{timeslot.Days} {timeslot.StartTime}-{timeslot.EndTime}",
+                    "preferred_times": [f"{start}-{end}" for start, end in preferred_times]
+                })
+
+            # Check day preference
+            preferred_days = [pref.PreferenceValue for pref in day_preferences]
+            assigned_days = set(timeslot.Days)  # e.g., "MWF" → {'M', 'W', 'F'}
+            day_conflict = True
+            for day_pattern in preferred_days:
+                preferred_days_set = set(day_pattern)  # e.g., "MTWF" → {'M', 'T', 'W', 'F'}
+                if assigned_days & preferred_days_set:  # Check for overlap
+                    day_conflict = False
+                    break
+
+            if day_conflict:
+                conflicts.append({
+                    "type": "Day Pref",
+                    "course": course.CourseID,
+                    "professor": professor.Name,
+                    "assigned_days": timeslot.Days,
+                    "preferred_days": preferred_days
+                })
+
+            # Check required rooms
+            required_rooms = [course.ReqRoom1, course.ReqRoom2, course.ReqRoom3, course.ReqRoom4, course.ReqRoom5]
+            required_rooms = [room_id for room_id in required_rooms if room_id is not None]  # Filter out None values
+
+            if required_rooms and room.RoomID not in required_rooms:
+                conflicts.append({
+                    "type": "ReqRoom",
+                    "course": course.CourseID,
+                    "assigned_room": room.RoomID,
+                    "required_rooms": required_rooms
+                })
+
+        return conflicts
 

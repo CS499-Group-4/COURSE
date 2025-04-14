@@ -42,15 +42,44 @@ def update_treeview():
 
 
 def runScheduler():
-    # Call the generate_schedule() function
     print("Running scheduler...")
-    if scheduler.is_schedule_empty():  # Use the scheduler instance
-        scheduler.generate_schedule()  # Use the scheduler instance
+    if scheduler.is_schedule_empty():
+        scheduler.generate_schedule()
+        print("Scheduler complete, validating faculty preferences...")
+        conflicts = scheduler.validate_faculty_preferences()
+        if conflicts:
+            print("Conflicts found:")
+            for conflict in conflicts:
+                print(conflict)
+        else:
+            print("No faculty preference conflicts found.")
     else:
-        pass
-    print("Scheduler complete, updating treeview...")
+        print("Schedule already exists.")
+    print("Updating treeview...")
     update_treeview()
     print("Treeview updated.")
+    print("Updating conflict treeview...")
+    update_conflict_treeview()
+    print("Conflict treeview updated.")
+
+
+def update_conflict_treeview():
+    """Populates the conflict tree view with detected conflicts."""
+    global conflict_tree
+
+    # Clear existing entries in the conflict tree view
+    conflict_tree.delete(*conflict_tree.get_children())
+
+    # Retrieve conflicts from the scheduler
+    conflicts = scheduler.validate_faculty_preferences()
+
+    # Populate the conflict tree view with a numerical order
+    for index, conflict in enumerate(conflicts, start=1):
+        conflict_type = conflict.get("type", "Unknown")
+        course = conflict.get("course", "N/A")
+
+        # Insert the conflict into the tree view with the index as the "Conflict" column
+        conflict_tree.insert("", "end", values=(index, conflict_type, course))
 
 
 def make_treeview_editable():
@@ -203,6 +232,11 @@ def update_database_from_treeview():
     scheduler.db.safe_commit()
     print("[INFO] Database update complete.")
 
+    # Run conflict detection again and update the conflict tree view
+    print("[INFO] Running conflict detection...")
+    update_conflict_treeview()
+    print("[INFO] Conflict tree view updated.")
+
 
 # ---------------------------
 # StartPage: Frame 2
@@ -291,12 +325,12 @@ class StartPage(tk.Frame):
         
 
         #conflict_tree section
-        conflict_columns = ("Course 1", "Course 2", "Conflict Type")
+        conflict_columns = ("Conflict", "Type", "Course")
         global conflict_tree
         conflict_tree = ttk.Treeview(self, columns=conflict_columns, show="headings")
         for col in conflict_columns:
             conflict_tree.heading(col, text=col)
-            conflict_tree.column(col, width=20, anchor="center")
+            conflict_tree.column(col, width=150, anchor="center")
         canvas.create_window(950.0, 380.0, anchor="nw", width=450.0, height=350.0, window=conflict_tree)
         conflict_scroll = ttk.Scrollbar(self, orient="vertical", command=conflict_tree.yview)
         conflict_tree.configure(yscrollcommand=conflict_scroll.set)
