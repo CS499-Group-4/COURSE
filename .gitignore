@@ -6,6 +6,8 @@
 build/
 build_venv/
 *.spec
+uploads/
+*.db
 
 #Ignore temporary files
 __pycache__/
