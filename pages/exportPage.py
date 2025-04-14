@@ -130,7 +130,7 @@ class ExportPage(tk.Frame):
         )
         button_6.image = button_image_6
         button_6.place(x=1167.0 * scale_x, y=864.0 * scale_y, width=200.0 * scale_x, height=101.0 * scale_y)
-        ToolTip(button_6, msg="Export Schedule to .csv", delay=0.5)
+        ToolTip(button_6, msg="Export Schedule to .csv and .pdf", delay=0.5)
 
         # Dropdown Menu 1: Sort Options (only Faculty, Room, and Department)
         sort_options = ["All", "Faculty", "Room", "Department"]
