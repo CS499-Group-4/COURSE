@@ -7,8 +7,8 @@ import os
 from lib.DatabaseManager import DatabaseManager, Preference  # Import the DatabaseManager and Preference classes
 from lib.CSV_Parser import parse_csv  # Import the parse_csv function
 from tkinter import messagebox
-#?????????????????????????????????????????????????????????????????????????????????
 from lib.CSV_Parser import parse_csv_2
+from tktooltip import ToolTip
 import shutil
 import json  # Add this import at the top if not already imported
 from tkinterdnd2 import DND_FILES, TkinterDnD
@@ -188,6 +188,7 @@ class UploadPage(tk.Frame):
         center_x = upload_x + (upload_width - confirm_width) / 2
 
         confirm_btn.place(x=center_x, y=958.0 * scale_y, width=confirm_width, height=69 * scale_y)
+        ToolTip(confirm_btn, msg="Add file to system", delay=1.0)
 
         # File upload button covers a large area.
         btn6_img = scaled_photoimage(str(relative_to_assets("button_12.png")), scale_x, scale_y)

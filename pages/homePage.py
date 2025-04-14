@@ -109,3 +109,5 @@ class HomePage(tk.Frame):
         canvas.create_text(366.4585 * scale_x, 234.97 * scale_y,
                            anchor="nw", text=desc_text, fill="#094478",
                            font=("Roboto Regular", int(20 * scale_y)))
+        
+

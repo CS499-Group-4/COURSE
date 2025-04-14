@@ -46,6 +46,8 @@ class MainApp(TkinterDnD.Tk):
         super().__init__()
         self.title("course")
         self.geometry("800x600")
+
+        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
         
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)

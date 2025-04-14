@@ -8,7 +8,7 @@ import tkinter.ttk as ttk
 import shutil
 from lib.DatabaseManager import DatabaseManager
 from lib.CSV_Parser import parse_csv_2
-#from tktooltip import ToolTip
+from tktooltip import ToolTip
 from tkinter import messagebox
 
 # ---------------------------
