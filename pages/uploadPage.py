@@ -301,7 +301,7 @@ class UploadPage(tk.Frame):
                 continue
             try:
                 # Attempt to parse the file
-                parse_csv_2(filepath)
+                parse_csv(filepath)
                 self.file_tree.item(item, values=(filename, filepath, "Parsed"), tags=("parsed",))
                 if filepath in self.file_state:
                     self.file_state[filepath]["status"] = "parsed"
