@@ -1,7 +1,8 @@
 import csv
+from fpdf import FPDF  # Import FPDF for PDF generation
 from lib.DatabaseManager import DatabaseManager, Faculty, Course, Classroom, TimeSlot, Schedule
 
-def export_schedule_to_csv(output_file, filter_type=None, filter_value=None):
+def export_schedule_to_csv_and_pdf(output_file, filter_type=None, filter_value=None):
     # Initialize DatabaseManager
     db_manager = DatabaseManager()
     db_manager.start_session()
@@ -28,12 +29,14 @@ def export_schedule_to_csv(output_file, filter_type=None, filter_value=None):
         writer = csv.writer(csvfile)
 
         # Write the header row
-        writer.writerow([
+        header = [
             "Faculty Name", "Course ID", "Classroom", "Days", "Start Time", "End Time",
-            "Room Capacity", "Course Max Enrollment"
-        ])
+            "Room Capacity", "Course Max Enroll"
+        ]
+        writer.writerow(header)
 
         # Write the filtered schedule data
+        rows = []
         for schedule in schedules:
             # Retrieve related data
             faculty = db_manager.session.query(Faculty).filter_by(FacultyID=schedule.Professor).first()  # Get faculty details
@@ -52,13 +55,42 @@ def export_schedule_to_csv(output_file, filter_type=None, filter_value=None):
             course_max_enrollment = course.MaxEnrollment if course else "N/A"
 
             # Write the row to the CSV file
-            writer.writerow([
+            row = [
                 faculty_name, course_id, classroom_id, days, start_time, end_time,
                 room_capacity, course_max_enrollment
-            ])
+            ]
+            writer.writerow(row)
+            rows.append(row)
 
     print(f"Filtered schedule successfully exported to {output_file}")
 
+    # Generate PDF from the CSV data
+    pdf_file = output_file.replace('.csv', '.pdf')
+    pdf = FPDF(orientation='L')  # Set orientation to Landscape
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=10)  # Reduce font size to fit more content
+
+    # Calculate column width dynamically based on page width
+    page_width = pdf.w - 2 * pdf.l_margin  # Page width minus margins
+    col_width = page_width / len(header)  # Divide evenly among columns
+
+    # Add header to the PDF
+    pdf.set_font("Arial", style="B", size=10)
+    for col in header:
+        pdf.cell(col_width, 10, col, border=1)
+    pdf.ln()
+
+    # Add rows to the PDF
+    pdf.set_font("Arial", size=10)
+    for row in rows:
+        for col in row:
+            pdf.cell(col_width, 10, str(col), border=1)
+        pdf.ln()
+
+    pdf.output(pdf_file)
+    print(f"Filtered schedule successfully exported to {pdf_file}")
+
 # Example usage
 if __name__ == "__main__":
-    export_schedule_to_csv("schedule_output.csv")
+    export_schedule_to_csv_and_pdf("schedule_output.csv")
