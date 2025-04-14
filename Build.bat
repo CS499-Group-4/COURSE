@@ -1,16 +1,12 @@
 @echo off
 
 REM Use python (not python3) on Windows
-if not exist build_venv (
-    echo ------------------------------------------------
-    echo Creating virtual environment...
-    echo ------------------------------------------------
-    python -m venv build_venv
-) else (
-    echo ------------------------------------------------
-    echo Virtual environment already exists.
-    echo ------------------------------------------------
-)
+
+echo ------------------------------------------------
+echo Creating virtual environment...
+echo ------------------------------------------------
+python -m venv build_venv
+
 
 echo ------------------------------------------------
 echo Activating virtual environment
