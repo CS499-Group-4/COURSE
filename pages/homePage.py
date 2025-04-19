@@ -43,57 +43,64 @@ class HomePage(tk.Frame):
         self.canvas = Canvas(self, bg="#FFFFFF", height=orig_height, width=orig_width,
                         bd=0, highlightthickness=0, relief="ridge")
         self.canvas.pack(fill="both", expand=True)
+        #self.canvas.create_rectangle(0.0, 0.0, 235.0, 1042.0, fill="#79BCF7", outline="")
 
-        self.canvas.create_rectangle(0.0, 0.0, 235.0, 1042.0, fill="#79BCF7", outline="")
+        
+        self.make_sideBar()
+        self.bind("<Configure>", self.on_resize)
+
+    def make_sideBar(self):
+
+        self.canvas.create_rectangle(0.0, 0.0, 235.0 * self.scale_x, 1042.0, fill="#79BCF7", outline="")
+        self.x = self.scale_x
+        
        # Navigation button: switch page
        # ----------------------------HomePage------------------------------------------
         btn5_img = scaled_photoimage(str(relative_to_assets("button_5.png")), self.scale_x, self.scale_y)
         btn5 = Button(self, image=btn5_img, borderwidth=0, highlightthickness=0,
                       command=lambda: self.controller.show_frame("HomePage"), relief="flat")
         btn5.image = btn5_img
-        btn5.place(x=0.0 * self.scale_x, y=2 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)  
+        btn5.place(x=0.0 * self.scale_x, y=0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)  
        # ----------------------------UploadPage------------------------------------------
         btn4_img = scaled_photoimage(str(relative_to_assets("button_4.png")), self.scale_x, self.scale_y)
         btn4 = Button(self, image=btn4_img, borderwidth=0, highlightthickness=0,
                       command=lambda: self.controller.show_frame("UploadPage"), relief="flat")
         btn4.image = btn4_img
-        btn4.place(x=0.0 * self.scale_x, y=102.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
+        btn4.place(x=0.0 * self.scale_x, y=100.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
         # ----------------------------viewPage------------------------------------------
         btn4_img = scaled_photoimage(str(relative_to_assets("button_2.png")), self.scale_x, self.scale_y)
         btn4 = Button(self, image=btn4_img, borderwidth=0, highlightthickness=0,
                       command=lambda: self.controller.show_frame("ViewPageOverall"), relief="flat")
         btn4.image = btn4_img
-        btn4.place(x=0.0 * self.scale_x, y=202.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)     
+        btn4.place(x=0.0 * self.scale_x, y=200.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)     
        # ----------------------------StartPage------------------------------------------
         btn3_img = scaled_photoimage(str(relative_to_assets("button_3.png")), self.scale_x, self.scale_y)
         btn3 = Button(self, image=btn3_img, borderwidth=0, highlightthickness=0,
                       command=lambda: self.controller.show_frame("StartPage"), relief="flat")
         btn3.image = btn3_img
-        btn3.place(x=0.0 * self.scale_x, y=302.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
+        btn3.place(x=0.0 * self.scale_x, y=300.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
        # ----------------------------ExportPage------------------------------------------
         btnexport_img = scaled_photoimage(str(relative_to_assets("export_button.png")), self.scale_x, self.scale_y)
         btnexport = Button(self, image=btnexport_img, borderwidth=0, highlightthickness=0,
                       command=lambda: self.controller.show_frame("ExportPage"), relief="flat")
         btnexport.image = btnexport_img
-        btnexport.place(x=0.0 * self.scale_x, y=402.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
+        btnexport.place(x=0.0 * self.scale_x, y=400.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
         # ----------------------------SettingPage------------------------------------------
         btn1_img = scaled_photoimage(str(relative_to_assets("button_1.png")), self.scale_x, self.scale_y)
         btn1 = Button(self, image=btn1_img, borderwidth=0, highlightthickness=0,
                       command=lambda: self.controller.show_frame("SettingPage"), relief="flat")
         btn1.image = btn1_img
-        btn1.place(x=0.0 * self.scale_x, y=502.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
+        btn1.place(x=0.0 * self.scale_x, y=500.0 * self.scale_y, width=235.0 * self.scale_x, height=100.0 * self.scale_y)
                 
-        #logo iamge
-        img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), self.scale_x, self.scale_y)
-        self.canvas.create_image(215.0 * self.scale_x, 1700.0 * self.scale_y, image=img1)
-        self.canvas.image = img1
-
-        self.bind("<Configure>", self.on_resize)
         self.prev_width = self.orig_width
         self.prev_height = self.orig_height
-        self.make_GUI()
+
+        
     
     def make_GUI(self):
+
+        self.canvas.create_rectangle(0.0, 0.0, 235.0 * self.x, 1042.0, fill="#79BCF7", outline="")
+
         self.canvas.create_rectangle(255.0* self.scale_x, 20.0 * self.scale_y, 1435.0* self.scale_x, 1020.0* self.scale_y, fill="#DAEBF9", outline="")
         #self.canvas.scale("all", 0, 0, self.scale_x, self.scale_y)
 
