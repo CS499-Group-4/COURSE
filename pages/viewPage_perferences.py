@@ -161,7 +161,7 @@ class ViewPagePreference(tk.Frame):
 
         def add_preference():
             # Retrieve values from the input fields
-            name = entry.get().strip()
+            name = self.dropdown_prof.get().strip()
             preference_type = dropdown_preference.get().strip()
             preference_value = entry3.get().strip()
 
@@ -220,7 +220,7 @@ class ViewPagePreference(tk.Frame):
                 # Refresh the Preferences treeview
                 self.update_treeview()
                 # Clear the input fields
-                entry.delete(0, "end")
+                self.dropdown_prof.set("Select Professor")
                 dropdown_preference.set("Select Type")
                 entry3.delete(0, "end")
             except Exception as e:
@@ -240,10 +240,22 @@ class ViewPagePreference(tk.Frame):
 
         canvas.create_rectangle(258.0* scale_x,845.0 * scale_y,1431.0* scale_x, 1032.0 * scale_y, fill="#DAEBFA", outline="")
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text(  278.0* scale_x,  883.0 * scale_y, anchor="nw", text="Name     ：", fill="#094478", font=("Jomolhari Regular",9))
-        entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
-        entry.place(x=412.0 * scale_x, y=874.0 * scale_y, width=280 * scale_x, height=50 * scale_y)
-        ToolTip(entry, msg="Enter Name of Professor with a Preference \nExample: Dr. Beats", delay=0.5)
+        canvas.create_text(278.0 * scale_x, 883.0 * scale_y, anchor="nw",
+                           text="Name     ：", fill="#094478",
+                           font=("Jomolhari Regular", 9))
+        # Populate the dropdown with professor names from the DB and store it as an instance variable
+        db = DatabaseManager()
+        db.start_session()
+        professors = db.get_faculty()
+        db.end_session()
+        professor_names = [fac.Name for fac in professors] if professors else ["No Professors Found"]
+
+        self.dropdown_prof = ttk.Combobox(self, values=professor_names, state="readonly",
+                                     font=("Arial", int(16 * scale_y)))
+        self.dropdown_prof.set(professor_names[0])
+        self.dropdown_prof.place(x=412.0 * scale_x, y=874.0 * scale_y,
+                            width=280 * scale_x, height=50 * scale_y)
+        ToolTip(self.dropdown_prof, msg="Select Name of Professor with a Preference", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 707.0* scale_x,883.0 * scale_y, anchor="nw", text="Preference Type：", fill="#094478", font=("Jomolhari Regular",9))
         preference_options = ["Room", "Day", "Time"]
@@ -291,6 +303,7 @@ class ViewPagePreference(tk.Frame):
         try:
             db = DatabaseManager()
             db.start_session()
+            print(f"Deleting preference: {faculty_name}, {pref_type}, {pref_value}")
             db.delete_preference_by_values(faculty_name, pref_type, pref_value)
             db.end_session()
             self.update_treeview()
@@ -299,6 +312,7 @@ class ViewPagePreference(tk.Frame):
     
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
+        self.update_professor_dropdown()
         self.update_treeview()
 
     def sort_treeview(self, col, reverse):
@@ -313,6 +327,16 @@ class ViewPagePreference(tk.Frame):
             self.tree_Perferences.move(k, '', index)
         # Reverse sort next time
         self.tree_Perferences.heading(col, command=lambda: self.sort_treeview(col, not reverse))
+
+    def update_professor_dropdown(self):
+        db = DatabaseManager()
+        db.start_session()
+        professors = db.get_faculty()
+        db.end_session()
+        professor_names = [fac.Name for fac in professors] if professors else ["No Professors Found"]
+        self.dropdown_prof['values'] = professor_names
+        # Optionally, reset the displayed value:
+        self.dropdown_prof.set(professor_names[0])
 
 
 

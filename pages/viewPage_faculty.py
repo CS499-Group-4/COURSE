@@ -358,6 +358,7 @@ class ViewPageFaculty(tk.Frame):
         try:
             db = DatabaseManager()
             db.start_session()
+            print(f"Deleting faculty: {name}, Priority: {priority}, Classes: {cl1}, {cl2}, {cl3}, {cl4}, {cl5}")
             db.delete_faculty_by_values(name, priority, cl1, cl2, cl3, cl4, cl5)
             db.end_session()
             self.update_treeview()
