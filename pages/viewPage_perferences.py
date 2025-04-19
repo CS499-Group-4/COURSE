@@ -163,10 +163,8 @@ class ViewPagePreference(tk.Frame):
             # Retrieve values from the input fields
             name = self.dropdown_prof.get().strip()
             preference_type = self.dropdown_preference.get().strip()
-            if preference_type == "Time":
-                preference_value = self.pref_value_dropdown.get().strip()
-            else:
-                preference_value = self.pref_value_entry.get().strip()
+            # Regardless of type, use the dropdown value for the preference.
+            preference_value = self.pref_value_dropdown.get().strip()
 
             # Validate all fields are filled
             if not (name and preference_type and preference_value):
@@ -273,17 +271,8 @@ class ViewPagePreference(tk.Frame):
         self.scale_x = scale_x
         self.scale_y = scale_y
 
-        # Create two widgets for entering the preference value.
-        # 1. The text entry (for Room or Day types)
-        self.pref_value_entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", 
-                                      highlightthickness=0, font=("Arial", int(16 * scale_y)))
-        self.pref_value_entry.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
-        ToolTip(self.pref_value_entry, msg="Enter Preference \nDay Example: MW \nRoom Example: OKT 125", delay=0.5)
-
-        # 2. The dropdown for time preferences (Morning, Afternoon, Evening)
-        self.pref_value_dropdown = ttk.Combobox(self, values=["Morning", "Afternoon", "Evening"], 
-                                                  state="readonly", font=("Arial", int(16 * scale_y)))
-        self.pref_value_dropdown.current(0)
+        # Create the dropdown for time preferences (Morning, Afternoon, Evening)
+        self.pref_value_dropdown = ttk.Combobox(self, state="readonly", font=("Arial", int(16 * scale_y)))
         # Do not place the dropdown now; it will be shown when needed
         self.pref_value_dropdown.place_forget()
 
@@ -361,17 +350,52 @@ class ViewPagePreference(tk.Frame):
         self.dropdown_prof.set(professor_names[0])
 
     def on_pref_type_change(self, event):
-        if self.dropdown_preference.get() == "Time":
-            # Hide the text entry and show the dropdown for time
-            self.pref_value_entry.place_forget()
+        pref_type = self.dropdown_preference.get()
+        # First, hide the dropdown widget (if visible)
+        self.pref_value_dropdown.place_forget()
+        if pref_type == "Time":
+            time_options = ["Morning", "Afternoon", "Evening"]
+            self.pref_value_dropdown['values'] = time_options
+            self.pref_value_dropdown.current(0)
             self.pref_value_dropdown.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
                                             width=751 * self.scale_x, height=50 * self.scale_y)
             ToolTip(self.pref_value_dropdown, msg="Select Time Preference", delay=0.5)
+        elif pref_type == "Day":
+            try:
+                from lib.DatabaseManager import TimeSlot
+                db = DatabaseManager()
+                db.start_session()
+                days_result = db.session.query(TimeSlot.Days).distinct().all()
+                days = sorted([d[0] for d in days_result])
+                db.end_session()
+            except Exception as e:
+                print(f"[ERROR] Could not retrieve days: {e}")
+                days = sorted(["MW", "TR", "MWF"])  # fallback options
+            self.pref_value_dropdown['values'] = days
+            if days:
+                self.pref_value_dropdown.current(0)
+            self.pref_value_dropdown.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
+                                           width=751 * self.scale_x, height=50 * self.scale_y)
+            ToolTip(self.pref_value_dropdown, msg="Select Day Preference", delay=0.5)
+        elif pref_type == "Room":
+            try:
+                db = DatabaseManager()
+                db.start_session()
+                rooms_result = db.get_classrooms()  # Assuming this returns a list of classroom objects
+                rooms = sorted([r.RoomID for r in rooms_result])
+                db.end_session()
+            except Exception as e:
+                print(f"[ERROR] Could not retrieve rooms: {e}")
+                rooms = sorted(["DEFAULT"])  # fallback option
+            self.pref_value_dropdown['values'] = rooms
+            if rooms:
+                self.pref_value_dropdown.current(0)
+            self.pref_value_dropdown.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
+                                            width=751 * self.scale_x, height=50 * self.scale_y)
+            ToolTip(self.pref_value_dropdown, msg="Select Room Preference", delay=0.5)
         else:
-            # Hide the time dropdown and show the text entry
-            self.pref_value_dropdown.place_forget()
-            self.pref_value_entry.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
-                                        width=751 * self.scale_x, height=50 * self.scale_y)
+            # If no valid preference type is selected, do not show any widget.
+            pass
 
 
 
