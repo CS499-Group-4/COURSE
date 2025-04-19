@@ -162,8 +162,11 @@ class ViewPagePreference(tk.Frame):
         def add_preference():
             # Retrieve values from the input fields
             name = self.dropdown_prof.get().strip()
-            preference_type = dropdown_preference.get().strip()
-            preference_value = entry3.get().strip()
+            preference_type = self.dropdown_preference.get().strip()
+            if preference_type == "Time":
+                preference_value = self.pref_value_dropdown.get().strip()
+            else:
+                preference_value = self.pref_value_entry.get().strip()
 
             # Validate all fields are filled
             if not (name and preference_type and preference_value):
@@ -221,8 +224,8 @@ class ViewPagePreference(tk.Frame):
                 self.update_treeview()
                 # Clear the input fields
                 self.dropdown_prof.set("Select Professor")
-                dropdown_preference.set("Select Type")
-                entry3.delete(0, "end")
+                self.dropdown_preference.set("Select Type")
+                self.pref_value_entry.delete(0, "end")
             except Exception as e:
                 db.end_session()
                 mbox.showerror("Error Adding Preference", f"Error adding preference: {e}")
@@ -258,16 +261,35 @@ class ViewPagePreference(tk.Frame):
         ToolTip(self.dropdown_prof, msg="Select Name of Professor with a Preference", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 707.0* scale_x,883.0 * scale_y, anchor="nw", text="Preference Type：", fill="#094478", font=("Jomolhari Regular",9))
-        preference_options = ["Room", "Day", "Time"]
-        dropdown_preference = ttk.Combobox(self, values=preference_options, state="readonly", font=("Arial", int(16 * scale_y)))
-        dropdown_preference.set("Select Type")
-        dropdown_preference.place(x=883.0 * scale_x, y=874.0 * scale_y, width=280 * scale_x, height=50 * scale_y)
+        self.dropdown_preference = ttk.Combobox(self, values=["Room", "Day", "Time"], state="readonly", font=("Arial", int(16 * scale_y)))
+        self.dropdown_preference.set("Select Type")
+        self.dropdown_preference.place(x=883.0 * scale_x, y=874.0 * scale_y, width=280 * scale_x, height=50 * scale_y)
+        ToolTip(self.dropdown_preference, msg="Select Preference Type", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text( 273.0* scale_x,969.0 * scale_y, anchor="nw", text="Preference ：", fill="#094478", font=("Jomolhari Regular",9))
-        entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
-        entry3.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
-        ToolTip(entry3, msg="Enter Preference \nDay Example: MW \nTime Example: Evening \nRoom Example: OKT 125", delay=0.5)
-        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text(273.0 * scale_x, 969.0 * scale_y, anchor="nw", 
+                           text="Preference ：", fill="#094478", font=("Jomolhari Regular", 9))
+
+        # Store the scale factors for later use
+        self.scale_x = scale_x
+        self.scale_y = scale_y
+
+        # Create two widgets for entering the preference value.
+        # 1. The text entry (for Room or Day types)
+        self.pref_value_entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", 
+                                      highlightthickness=0, font=("Arial", int(16 * scale_y)))
+        self.pref_value_entry.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
+        ToolTip(self.pref_value_entry, msg="Enter Preference \nDay Example: MW \nRoom Example: OKT 125", delay=0.5)
+
+        # 2. The dropdown for time preferences (Morning, Afternoon, Evening)
+        self.pref_value_dropdown = ttk.Combobox(self, values=["Morning", "Afternoon", "Evening"], 
+                                                  state="readonly", font=("Arial", int(16 * scale_y)))
+        self.pref_value_dropdown.current(0)
+        # Do not place the dropdown now; it will be shown when needed
+        self.pref_value_dropdown.place_forget()
+
+        # Bind the selection event to toggle the preference value widget:
+        self.dropdown_preference.bind("<<ComboboxSelected>>", self.on_pref_type_change)
+
         self.tree_Perferences.bind("<Button-3>", self.show_context_menu)
 
 
@@ -337,6 +359,19 @@ class ViewPagePreference(tk.Frame):
         self.dropdown_prof['values'] = professor_names
         # Optionally, reset the displayed value:
         self.dropdown_prof.set(professor_names[0])
+
+    def on_pref_type_change(self, event):
+        if self.dropdown_preference.get() == "Time":
+            # Hide the text entry and show the dropdown for time
+            self.pref_value_entry.place_forget()
+            self.pref_value_dropdown.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
+                                            width=751 * self.scale_x, height=50 * self.scale_y)
+            ToolTip(self.pref_value_dropdown, msg="Select Time Preference", delay=0.5)
+        else:
+            # Hide the time dropdown and show the text entry
+            self.pref_value_dropdown.place_forget()
+            self.pref_value_entry.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
+                                        width=751 * self.scale_x, height=50 * self.scale_y)
 
 
 
