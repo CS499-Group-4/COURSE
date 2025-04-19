@@ -65,16 +65,50 @@ Finalized: 4/27/2025
 This project is organized using modular page-based Tkinter views. Each of these is implemented as a `tk.Frame` class and rendered by a central `controller`.
 
 - `homePage.py`– Welcome page with application overview and navigation panel. Contains logo, usage instructions, and navigation buttons on the left.
+  
+  <img src="https://github.com/user-attachments/assets/a29aae77-d47f-4671-a866-00a9cd19ca4c" alt="course_logo" height="400">
+
 - `uploadPage.py` –  File uploader with drag-and-drop support. Shows files in a Treeview, with "Confirm" to parse and load data. Uploads are remembered across sessions.
-- `viewPage_overall.py` – Dashboard-like view that shows a summary of all courses, faculty, rooms, preferences, and time slots. 
+  
+   <img src="https://github.com/user-attachments/assets/e3fcd682-ff75-415c-92c6-8f2e72d3d896" alt="course_logo" height="400">
+
+- `viewPage_overall.py` – Dashboard-like view that shows a summary of all courses, faculty, rooms, preferences, and time slots.
+  
+   <img src="https://github.com/user-attachments/assets/2e9dba73-fd46-4eac-b8dd-b6fe971eee88" alt="course_logo" height="400">
+
 - `viewPage_course.py` –  Dedicated view to see, add, and remove course entries, including course ID, department, capacity, and required rooms
+  
+   <img src="https://github.com/user-attachments/assets/1fa19dc8-eae6-4759-8477-5a0dbf3d85aa" alt="course_logo" height="400">
+
 - `viewPage_faculty.py` – View and manage professor records. Allows assigning up to five courses per professor with priorities.
+  
+   <img src="https://github.com/user-attachments/assets/eea0d853-76a6-4521-9013-d9544076ec72" alt="course_logo" height="400">
+
 - `viewPage_preference.py` – Set room, day, and time preferences for each faculty member. Preferences are stored in the database and used during scheduling.
+  
+   <img src="https://github.com/user-attachments/assets/c65335f8-97e8-4694-bb95-df680676c6a3" alt="course_logo" height="400">
+
 - `viewPage_rooms.py` – List and manage classroom records including room ID, department, building, and capacity.
+  
+   <img src="https://github.com/user-attachments/assets/1aca7cba-f039-45f6-9478-1ecc21079bce" alt="course_logo" height="400">
+
 - `viewPage_times.py` – Define and manage available time slots. Each slot includes days, start time, and end time.
+  
+   <img src="https://github.com/user-attachments/assets/c45f41cb-ae6b-42a9-89f8-8cfb8af395a8" alt="course_logo" height="400">
+
 - `startPage.py` – Scheduler runner. Lets the user start the auto-scheduling process, review scheduling status, and inspect conflict groups.
+  
+   <img src="https://github.com/user-attachments/assets/de59c76d-6b13-45d0-be89-d5d07287bd9f" alt="course_logo" height="400">
+
 - `exportPage.py` – Lets the user filter the final schedule by Faculty, Room, or Department and export it to both CSV and PDF. Includes two dropdowns and a TreeView for review.
-- `settingPage.py` – Under construction.
+  
+   <img src="https://github.com/user-attachments/assets/7e25b19b-6632-4e74-bf89-ab6c84865805" alt="course_logo" height="400">
+
+- `settingPage.py` ** – Under construction. **
+  
+   <img src="https://github.com/user-attachments/assets/898cfe89-bbce-43b1-98b9-abaa181d9b84" alt="course_logo" height="400">
+
+
 
 ## ⚙️ Logic / Utils
 
