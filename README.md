@@ -1,6 +1,4 @@
-<img src="https://github.com/user-attachments/assets/e1b85d21-63d4-44ac-8c50-8ff701847f0d" alt="course_logo" height="200">
-
- Course Scheduling System
+# <img src="https://github.com/user-attachments/assets/e1b85d21-63d4-44ac-8c50-8ff701847f0d" alt="course_logo" height="50">  Course Scheduling System
 
  <img src="https://github.com/user-attachments/assets/fd1f1438-dd6f-477c-af18-4e988dd09942" alt="course_logo" height="80">
 
