@@ -64,18 +64,17 @@ Finalized: 4/27/2025
 
 This project is organized using modular page-based Tkinter views. Each of these is implemented as a `tk.Frame` class and rendered by a central `controller`.
 
-- `homePage.py` – main welcome screen.
-- `uploadPage.py` – for uploading and parsing CSV files.
-- `viewPage.py` – base class for view pages.
-- `viewPage_overall.py` – overall summary view.
-- `viewPage_course.py` – displays list of courses.
-- `viewPage_faculty.py` – displays faculty and class assignments.
-- `viewPage_preference.py` – professor preferences (time, room, day).
-- `viewPage_rooms.py` – manage classrooms.
-- `viewPage_times.py` – manage timeslots.
-- `startPage.py` – runs the scheduler and allows editing results.
-- `exportPage.py` – export to CSV/PDF with filters.
-- `settingPage.py` – UI for future display/font/theme settings (WIP).
+- `homePage.py`– Welcome page with application overview and navigation panel. Contains logo, usage instructions, and navigation buttons on the left.
+- `uploadPage.py` –  File uploader with drag-and-drop support. Shows files in a Treeview, with "Confirm" to parse and load data. Uploads are remembered across sessions.
+- `viewPage_overall.py` – Dashboard-like view that shows a summary of all courses, faculty, rooms, preferences, and time slots. 
+- `viewPage_course.py` –  Dedicated view to see, add, and remove course entries, including course ID, department, capacity, and required rooms
+- `viewPage_faculty.py` – View and manage professor records. Allows assigning up to five courses per professor with priorities.
+- `viewPage_preference.py` – Set room, day, and time preferences for each faculty member. Preferences are stored in the database and used during scheduling.
+- `viewPage_rooms.py` – List and manage classroom records including room ID, department, building, and capacity.
+- `viewPage_times.py` – Define and manage available time slots. Each slot includes days, start time, and end time.
+- `startPage.py` – Scheduler runner. Lets the user start the auto-scheduling process, review scheduling status, and inspect conflict groups.
+- `exportPage.py` – Lets the user filter the final schedule by Faculty, Room, or Department and export it to both CSV and PDF. Includes two dropdowns and a TreeView for review.
+- `settingPage.py` – Under construction.
 
 ## ⚙️ Logic / Utils
 
