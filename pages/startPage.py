@@ -385,7 +385,7 @@ class StartPage(tk.Frame):
     def update_database_from_treeview(self):
         print("[INFO] Updating database with Treeview data...")
         has_updates = False  # Track if any updates are made
-
+        
         for row in self.tree.get_children():
             # Check if the row has the "edited" tag
             if "edited" not in self.tree.item(row, "tags"):
