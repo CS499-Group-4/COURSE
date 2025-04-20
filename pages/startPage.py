@@ -247,7 +247,7 @@ def update_database_from_treeview():
             print(f"[WARN] {warning_message}")
             messagebox.showwarning("Update Warning", warning_message)
             continue
-
+        
         # Check for Room conflicts and capacity
         room_entry = scheduler.db.session.query(Classroom).filter(Classroom.RoomID == room).first()
         if room_entry:
@@ -405,9 +405,10 @@ class StartPage(tk.Frame):
         conflict_tree.configure(yscrollcommand=conflict_scroll.set)
         conflict_scroll.place(x=1400.0 * scale_x, y=365.0 * scale_y, height=400.0 * scale_y)        
 
-        canvas.create_text(1800.0 * scale_x, 350.0 * scale_y, anchor="nw",
-                           text="status info", fill="#000000",
-                           font=("Jomolhari Regular", int(15 * scale_y)))
+        #Scheduler Progress Bar
+        #1800.0 * scale_x, 350.0 * scale_y
+        self.scheduleProgress =  ttk.Progressbar(canvas, value = 100, style='info.Striped.Horizontal.TProgressbar')
+        self.scheduleProgress.place(x=1000.0 * scale_x, y=200.0 * scale_y, width = 200, height = 50)
         
         # # Lower right button
         # button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), scale_x, scale_y)
