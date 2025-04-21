@@ -53,8 +53,6 @@ class ViewPageOverall(tk.Frame):
                            bd=0, highlightthickness=0, relief="ridge")
         canvas.place(x=0, y=0)
         canvas.create_rectangle(0.0, 1.0, 235.0* scale_x, 1042.0, fill="#79BCF7", outline="")
-
-
       
         # Navigation button: switch page
        # ----------------------------HomePage------------------------------------------
