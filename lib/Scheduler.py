@@ -199,12 +199,17 @@ class CourseScheduler:
     # METHOD: generate_schedule
     # ============================
     # Generates the schedule by assigning courses to professors, time slots, and rooms.
-    def generate_schedule(self):
+    def generate_schedule(self, update_callback=None):
         sorted_courses = self.get_sorted_courses(self.session)  # Get sorted courses
         all_faculty = self.db.get_faculty()  # Get all faculty members
 
+        #Vars for progress bar
+        num_courses = len(sorted_courses)
+        progress_increment = 100 / num_courses if num_courses > 0 else 100
+
+
         # Iterate over each course to assign it
-        for course in sorted_courses:
+        for idx, course in enumerate(sorted_courses):
             print(f"Scheduling: CourseID: {course.CourseID}, MaxEnrollment: {course.MaxEnrollment}")  # Debugging output
             for professor in (p for p in all_faculty if course.CourseID in (p.Class1, p.Class2, p.Class3, p.Class4, p.Class5)):  # Get professors for the course
                 preferred_timeslots = self.get_preferred_slots(professor)  # Use get_preferred_slots to get preferred time slots for the professor
@@ -221,7 +226,7 @@ class CourseScheduler:
                 # Check preferred time slots and required rooms
                 for slot in preferred_timeslots:
                     if self.is_professor_occupied(professor, slot):  # Check if the professor is already occupied
-                        print(f"Professor {professor.Name} is occupied during {slot.Days} {slot.StartTime}-{slot.EndTime}")
+                        #print(f"Professor {professor.Name} is occupied during {slot.Days} {slot.StartTime}-{slot.EndTime}")
                         continue
 
                     for room_id in required_rooms:
@@ -238,7 +243,7 @@ class CourseScheduler:
                 if not final_timeslot:
                     for slot in preferred_timeslots:  # Iterate over preferred timeslots again
                         if self.is_professor_occupied(professor, slot):  # Check if the professor is already occupied
-                            print(f"Professor {professor.Name} is occupied during {slot.Days} {slot.StartTime}-{slot.EndTime}")
+                            #print(f"Professor {professor.Name} is occupied during {slot.Days} {slot.StartTime}-{slot.EndTime}")
                             continue
 
                         for room in self.db.get_classrooms():  # Get all classrooms
@@ -252,18 +257,23 @@ class CourseScheduler:
 
                 # If no preferred time slots are available, skip the assignment
                 if not final_timeslot:
-                    print(f"FAILED TO ASSIGN: CourseID: {course.CourseID}, Professor: {professor.Name} (No preferred time slots available)")  # Debugging output
+                    #print(f"FAILED TO ASSIGN: CourseID: {course.CourseID}, Professor: {professor.Name} (No preferred time slots available)")  # Debugging output
                     continue
 
                 # Commit to the schedule table
                 if final_timeslot and final_room:  # If a suitable timeslot and room are found
                     self.db.add_schedule(final_timeslot, professor, course, final_room)  # Add to the schedule
-                    print(f"ASSIGNED: CourseID: {course.CourseID}, Professor: {professor.Name}, "
-                          f"Timeslot: {final_timeslot.Days} {final_timeslot.StartTime}-{final_timeslot.EndTime}, "
-                          f"Room: {final_room.RoomID}")
+                    #print(f"ASSIGNED: CourseID: {course.CourseID}, Professor: {professor.Name}, "
+                          #f"Timeslot: {final_timeslot.Days} {final_timeslot.StartTime}-{final_timeslot.EndTime}, "
+                          #f"Room: {final_room.RoomID}")
                 else:
-                    print(f"FAILED TO ASSIGN: CourseID: {course.CourseID}, Professor: {professor.Name}")  # Debugging output
-
+                    #print(f"FAILED TO ASSIGN: CourseID: {course.CourseID}, Professor: {professor.Name}")  # Debugging output
+                    pass
+            #Update progress if a callback is provided
+            if update_callback:
+                progress = (idx + 1) / len(sorted_courses) * 100
+                print(f"Progress: {progress:.2f}%")  # Debugging output
+                update_callback(progress)
     # ============================
     # METHOD: return_schedule
     # ============================

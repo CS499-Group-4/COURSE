@@ -10,6 +10,7 @@ from tktooltip import ToolTip
 from lib.DatabaseManager import Schedule, Faculty, Course, Classroom, TimeSlot
 #import the generate_scheduler() function from lib/scheduler.py
 from lib.Scheduler import CourseScheduler
+import threading
 
 # Instantiate the scheduler
 scheduler = CourseScheduler()
@@ -272,32 +273,36 @@ class StartPage(tk.Frame):
         for entry in scheduler.return_schedule():  # Use the scheduler instance
             self.tree.insert("", "end", values=entry)
 
+    def updateProgress(self, value):
+        """Update the progress bar value."""
+        print(f"UpdateProgress: {value}%")
+        self.scheduleProgress['value'] = value
+        self.update_idletasks()
 
     def runScheduler(self):
         print("Running scheduler...")
-        self.scheduleProgress['value'] = 30
-        if scheduler.is_schedule_empty():
-            scheduler.generate_schedule()
-            print("Scheduler complete, validating faculty preferences...")
-            conflicts = scheduler.validate_faculty_preferences()
-            if conflicts:
-                print("Conflicts found:")
-                for conflict in conflicts:
-                    print(conflict)
-            else:
-                print("No faculty preference conflicts found.")
-        else:
-            print("Schedule already exists.")
-        self.scheduleProgress['value'] = 60
-        print("Updating treeview...")
-        self.update_treeview()
-        self.scheduleProgress['value'] = 90
-        print("Treeview updated.")
-        print("Updating conflict treeview...")
-        self.update_conflict_treeview()
-        self.scheduleProgress['value'] = 100
-        print("Conflict treeview updated.")
 
+        def schedule_worker():
+            if scheduler.is_schedule_empty():
+                scheduler.generate_schedule(update_callback=self.updateProgress)
+                print("Scheduler complete, validating faculty preferences...")
+                conflicts = scheduler.validate_faculty_preferences()
+                if conflicts:
+                    print("Conflicts found:")
+                    for conflict in conflicts:
+                        print(conflict)
+                else:
+                    print("No faculty preference conflicts found.")
+            else:
+                print("Schedule already exists.")
+                self.updateProgress(100)
+                messagebox.showinfo("Info", 
+                    "Schedule already exists. Please delete the existing schedule if you would like to generate a new one.")
+            print("Updating treeview...")
+            self.update_treeview()
+            print("Treeview updated.")
+
+        threading.Thread(target=schedule_worker, daemon=True).start()
 
     def update_conflict_treeview(self):
         """Populates the conflict tree view with detected conflicts."""
