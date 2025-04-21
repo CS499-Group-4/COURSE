@@ -156,10 +156,10 @@ def make_treeview_editable():
         tree.winfo_toplevel().bind("<Button-1>", close_combobox, add="+")
 
         # Unbind the click event when the Combobox is destroyed
-        def on_destroy(event):
-            tree.winfo_toplevel().unbind("<Button-1>", close_combobox)
+        # def on_destroy(event):
+        #     tree.winfo_toplevel().unbind("<Button-1>", close_combobox)
 
-        combobox.bind("<Destroy>", on_destroy)
+        # combobox.bind("<Destroy>", on_destroy)
 
     # Bind the double-click event to the Treeview
     tree.bind("<Double-1>", on_double_click)
@@ -305,6 +305,10 @@ class StartPage(tk.Frame):
         new_width, new_height = 800, 600
         scale_x, scale_y = new_width / orig_width, new_height / orig_height
 
+        style = ttk.Style()
+        # Without changing the overall theme, simply ensure the progress bar's background is blue:
+        style.configure("CustomBlue.Horizontal.TProgressbar", background="#79BCF7")
+
         canvas = Canvas(self, bg="#FFFFFF", height=orig_width, width=orig_height,
                         bd=0, highlightthickness=0, relief="ridge")
         canvas.place(x=0, y=0)
@@ -365,9 +369,9 @@ class StartPage(tk.Frame):
         # button_7.place(x=1224.0 * scale_x, y=36.0 * scale_y, width=200.0 * scale_x, height=112.0 * scale_y)
         
        # Status and conflict summary text
-        canvas.create_text(2000.0 * scale_x, 270.0 * scale_y, anchor="nw",
-                           text="Status:", fill="#094478",
-                           font=("Jomolhari Regular", int(20 * scale_y)))
+        # canvas.create_text(2000.0 * scale_x, 270.0 * scale_y, anchor="nw",
+        #                    text="Status:", fill="#094478",
+        #                    font=("Jomolhari Regular", int(20 * scale_y)))
         canvas.create_rectangle(935.0, 339.0, 1435.0, 818.0, fill="#FFFFFF", outline="")
         canvas.create_text(1064.0, 339.0, anchor="nw",
                            text="Conflict  Summary：", fill="#094478",
@@ -489,6 +493,10 @@ class StartPage(tk.Frame):
         self.scheduleProgress['value'] = 0  # Only visible in "determinate" mode
         self.scheduleProgress.place(x=1020.0 * scale_x,
                                     y=210.0 * scale_y)
+        canvas.create_text(1020.0 * scale_x + 100, 210.0 * scale_y - 20,
+                           text="Status:", fill="#094478",
+                           font=("Jomolhari Regular", int(20 * scale_y)),
+                           anchor="center")
     def updateProgress(self, value):
         """Update the progress bar value."""
         print(f"UpdateProgress: {value}%")
@@ -522,13 +530,3 @@ class StartPage(tk.Frame):
         # Run the scheduler in a background thread
         threading.Thread(target=scheduler_worker, daemon=True).start()
 
-        style = ttk.Style()
-        style.theme_use('default')  # Use a theme that allows customizations
-        style.configure(
-            "CustomBlue.Horizontal.TProgressbar", 
-            troughcolor="#E0E0E0",      # Adjust trough color if needed
-            background="#79BCF7",        # Set the progress color to blue
-            bordercolor="#E0E0E0",
-            lightcolor="#79BCF7",
-            darkcolor="#79BCF7"
-        )
