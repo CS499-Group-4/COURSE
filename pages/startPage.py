@@ -69,12 +69,12 @@ class StartPage(tk.Frame):
                 foreground="black",         # Text color
                 rowheight=25,
                 fieldbackground="white",  # Area around the cells
-                font=('Helvetica', 12))
+                font=('Helvetica', 10))
         # Treeview header appearance
         style.configure("Treeview.Heading",
                 background="white",
                 foreground="black",   # Or white if you set a darker bg
-                font=('Helvetica', 12, 'bold'))
+                font=('Helvetica', 10, 'bold'))
         style.configure("CustomBlue.Vertical.TScrollbar",
                 gripcount=0,
                 background="#0a4578",   # Thumb (scroll handle)
