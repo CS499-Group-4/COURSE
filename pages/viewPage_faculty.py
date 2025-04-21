@@ -202,16 +202,57 @@ class ViewPageFaculty(tk.Frame):
 
             # Function to standardize class IDs (e.g., "abc123" -> "ABC 123")
             def standardize_class_id(cid):
-                match = re.match(r'([A-Za-z]+)\s*(\d+)', cid)
-                if match:
-                    return f"{match.group(1).upper()} {match.group(2)}"
-                return cid.upper()
+                """
+                Expects cid in the format 'CS 155-1' or 'CS 155-01' (with optional spaces around the dash).
+                Returns the course ID in the format 'CS 155-01' (section padded to two digits).
+                If the input does not match, returns None.
+                """
+                cid = cid.strip()
 
-            # Process each class ID: class_id1 is required; default others to None if blank
-            class_id1 = standardize_class_id(class_id1)
-            class_id2 = standardize_class_id(class_id2) if class_id2.strip() else None
-            class_id3 = standardize_class_id(class_id3) if class_id3.strip() else None
-            class_id4 = standardize_class_id(class_id4) if class_id4.strip() else None
+                print(f"Standardizing class ID: {cid}")
+                match = re.match(r'([A-Za-z]+\s*\d+)-(\d+)$', cid)
+                print(f"Match: {match}")
+
+                if match:
+                    base = match.group(1).strip()
+                    section = match.group(2).strip()
+                    if len(section) == 1:
+                        section = section.zfill(2)
+                    return f"{base}-{section}"
+                else:
+                    return None
+
+            # Process each class input:
+            class_id1 = standardize_class_id(entry3.get().strip())
+            if class_id1 is None:
+                mbox.showerror("Invalid Class ID", "Class ID 1 must be entered in the format 'CS 155-01'.")
+                db.end_session()
+                return
+
+            # Process optional Class IDs similarly:
+            class_id2_raw = entry4.get().strip()
+            class_id2 = standardize_class_id(class_id2_raw) if class_id2_raw else None
+            if class_id2_raw and class_id2 is None:
+                mbox.showerror("Invalid Class ID", "Class ID 2 must be entered in the format 'CS 155-01'.")
+                db.end_session()
+                return
+
+            class_id3_raw = entry5.get().strip()
+            class_id3 = standardize_class_id(class_id3_raw) if class_id3_raw else None
+            if class_id3_raw and class_id3 is None:
+                mbox.showerror("Invalid Class ID", "Class ID 3 must be entered in the format 'CS 155-01'.")
+                db.end_session()
+                return
+
+            class_id4_raw = entry6.get().strip()
+            class_id4 = standardize_class_id(class_id4_raw) if class_id4_raw else None
+            if class_id4_raw and class_id4 is None:
+                mbox.showerror("Invalid Class ID", "Class ID 4 must be entered in the format 'CS 155-01'.")
+                db.end_session()
+                return
+
+            # Then prepare the list for insertion:
+            class_ids = [class_id1, class_id2, class_id3, class_id4]
 
             # For each non-None class, warn if the course doesn't exist in the database.
             for cid in [class_id1, class_id2, class_id3, class_id4]:
@@ -371,9 +412,6 @@ class ViewPageFaculty(tk.Frame):
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
         self.update_treeview()
-
-
-
 
 
 
