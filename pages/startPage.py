@@ -149,10 +149,10 @@ class StartPage(tk.Frame):
                                                 orient="horizontal",
                                                 length=200,
                                                 mode="determinate")  # Or "indeterminate"
-        self.scheduleProgress['value'] = 100  # Only visible in "determinate" mode
+        self.scheduleProgress['value'] = 0  # Only visible in "determinate" mode
         self.scheduleProgress.place(x=1000.0 * self.scale_x,
                                     y=210.0 * self.scale_y)
-        self.scheduleProgress.step(0)
+        #self.scheduleProgress.step(0)
         
         # # Lower right button
         # button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), self.scale_x, self.scale_y)
@@ -255,7 +255,7 @@ class StartPage(tk.Frame):
 
     def runScheduler(self):
         print("Running scheduler...")
-        self.scheduleProgress.step(30)
+        self.scheduleProgress['value'] = 30
         if scheduler.is_schedule_empty():
             scheduler.generate_schedule()
             print("Scheduler complete, validating faculty preferences...")
@@ -268,14 +268,14 @@ class StartPage(tk.Frame):
                 print("No faculty preference conflicts found.")
         else:
             print("Schedule already exists.")
-        self.scheduleProgress.step(60)
+        self.scheduleProgress['value'] = 60
         print("Updating treeview...")
         self.update_treeview()
-        self.scheduleProgress.step(90)
+        self.scheduleProgress['value'] = 90
         print("Treeview updated.")
         print("Updating conflict treeview...")
-        self.scheduleProgress.step(100)
         self.update_conflict_treeview()
+        self.scheduleProgress['value'] = 100
         print("Conflict treeview updated.")
 
 
