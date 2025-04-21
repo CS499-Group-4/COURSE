@@ -11,7 +11,6 @@ from lib.DatabaseManager import Schedule, Faculty, Course, Classroom, TimeSlot
 
 #import the generate_scheduler() function from lib/scheduler.py
 from lib.Scheduler import CourseScheduler
-import threading 
 
 # Instantiate the scheduler
 scheduler = CourseScheduler()
@@ -43,6 +42,26 @@ def update_treeview():
         tree.insert("", "end", values=entry)
 
 
+def runScheduler():
+    print("Running scheduler...")
+    if scheduler.is_schedule_empty():
+        scheduler.generate_schedule()
+        print("Scheduler complete, validating faculty preferences...")
+        conflicts = scheduler.validate_faculty_preferences()
+        if conflicts:
+            print("Conflicts found:")
+            for conflict in conflicts:
+                print(conflict)
+        else:
+            print("No faculty preference conflicts found.")
+    else:
+        print("Schedule already exists.")
+    print("Updating treeview...")
+    update_treeview()
+    print("Treeview updated.")
+    print("Updating conflict treeview...")
+    update_conflict_treeview()
+    print("Conflict treeview updated.")
 
 
 def update_conflict_treeview():
@@ -352,7 +371,7 @@ class StartPage(tk.Frame):
         # Start Button
         button_image_6 = scaled_photoimage(str(relative_to_assets("button_6.png")), scale_x, scale_y)
         button_6 = Button(self, image=button_image_6, borderwidth=0, highlightthickness=0,
-                          command=self.runScheduler, relief="flat")
+                          command=runScheduler, relief="flat")
         button_6.image = button_image_6
         button_6.place(x=1100.0 * scale_x, y=36.0 * scale_y, width=206.0 * scale_x, height=101.0 * scale_y)
         ToolTip(button_6, msg="Click to Generate Schedule", delay=0.5)
@@ -386,9 +405,9 @@ class StartPage(tk.Frame):
         conflict_tree.configure(yscrollcommand=conflict_scroll.set)
         conflict_scroll.place(x=1400.0 * scale_x, y=365.0 * scale_y, height=400.0 * scale_y)        
 
-        # canvas.create_text(1800.0 * scale_x, 350.0 * scale_y, anchor="nw",
-        #                    text="status info", fill="#000000",
-        #                    font=("Jomolhari Regular", int(15 * scale_y)))
+        canvas.create_text(1800.0 * scale_x, 350.0 * scale_y, anchor="nw",
+                           text="status info", fill="#000000",
+                           font=("Jomolhari Regular", int(15 * scale_y)))
         
         # # Lower right button
         # button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), scale_x, scale_y)
@@ -474,61 +493,8 @@ class StartPage(tk.Frame):
         tree_scroll = ttk.Scrollbar(self, orient="vertical", command=tree.yview)
         tree.configure(yscrollcommand=tree_scroll.set)
         canvas.create_window(240, 9, width=671, height=1026, anchor="nw", window=tree)
-        tree_scroll.place(x=911.0 * scale_x, y=9 * scale_y, height=1026 * scale_y)
+        tree_scroll.place(x=500, y=6, height=1025)
         
         make_treeview_editable()
       
         canvas.scale("all", 0, 0, scale_x, scale_y)
-
-        # Add progress bar widget:
-        self.scheduleProgress = ttk.Progressbar(self,
-                                                style="CustomBlue.Horizontal.TProgressbar",
-                                                orient="horizontal",
-                                                length=200,
-                                                mode="determinate")  # Or "indeterminate"
-        self.scheduleProgress['value'] = 0  # Only visible in "determinate" mode
-        self.scheduleProgress.place(x=1020.0 * scale_x,
-                                    y=210.0 * scale_y)
-    def updateProgress(self, value):
-        """Update the progress bar value."""
-        print(f"UpdateProgress: {value}%")
-        self.scheduleProgress['value'] = value
-        self.update_idletasks()
-
-    def runScheduler(self):
-        def scheduler_worker():
-            #self.scheduleProgress['value'] = 10
-            # If the schedule is empty, generate with progress updates.
-            if scheduler.is_schedule_empty():
-                # Pass the update callback function to update progress:
-                scheduler.generate_schedule(update_callback=lambda prog: self.scheduleProgress.configure(value=prog))
-                #self.scheduleProgress['value'] = 70
-                conflicts = scheduler.validate_faculty_preferences()
-                if conflicts:
-                    print("Conflicts found:")
-                    for conflict in conflicts:
-                        print(conflict)
-                else:
-                    print("No faculty preference conflicts found.")
-            else:
-                self.updateProgress(100)
-                print("Schedule already exists.")
-                #self.scheduleProgress['value'] = 80
-            # Finally, update the tree views and finish progress:
-            update_treeview()
-            update_conflict_treeview()
-            #self.scheduleProgress['value'] = 100
-
-        # Run the scheduler in a background thread
-        threading.Thread(target=scheduler_worker, daemon=True).start()
-
-        style = ttk.Style()
-        style.theme_use('default')  # Use a theme that allows customizations
-        style.configure(
-            "CustomBlue.Horizontal.TProgressbar", 
-            troughcolor="#E0E0E0",      # Adjust trough color if needed
-            background="#79BCF7",        # Set the progress color to blue
-            bordercolor="#E0E0E0",
-            lightcolor="#79BCF7",
-            darkcolor="#79BCF7"
-        )

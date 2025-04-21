@@ -223,7 +223,7 @@ class ViewPagePreference(tk.Frame):
                 # Clear the input fields
                 self.dropdown_prof.set("Select Professor")
                 self.dropdown_preference.set("Select Type")
-                self.pref_value_entry.delete(0, "end")
+                #self.pref_value_entry.delete(0, "end")
             except Exception as e:
                 db.end_session()
                 mbox.showerror("Error Adding Preference", f"Error adding preference: {e}")
