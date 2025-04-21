@@ -161,9 +161,10 @@ class ViewPagePreference(tk.Frame):
 
         def add_preference():
             # Retrieve values from the input fields
-            name = entry.get().strip()
-            preference_type = dropdown_preference.get().strip()
-            preference_value = entry3.get().strip()
+            name = self.dropdown_prof.get().strip()
+            preference_type = self.dropdown_preference.get().strip()
+            # Regardless of type, use the dropdown value for the preference.
+            preference_value = self.pref_value_dropdown.get().strip()
 
             # Validate all fields are filled
             if not (name and preference_type and preference_value):
@@ -220,9 +221,9 @@ class ViewPagePreference(tk.Frame):
                 # Refresh the Preferences treeview
                 self.update_treeview()
                 # Clear the input fields
-                entry.delete(0, "end")
-                dropdown_preference.set("Select Type")
-                entry3.delete(0, "end")
+                self.dropdown_prof.set("Select Professor")
+                self.dropdown_preference.set("Select Type")
+                self.pref_value_entry.delete(0, "end")
             except Exception as e:
                 db.end_session()
                 mbox.showerror("Error Adding Preference", f"Error adding preference: {e}")
@@ -240,22 +241,44 @@ class ViewPagePreference(tk.Frame):
 
         canvas.create_rectangle(258.0* scale_x,845.0 * scale_y,1431.0* scale_x, 1032.0 * scale_y, fill="#DAEBFA", outline="")
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text(  278.0* scale_x,  883.0 * scale_y, anchor="nw", text="Name     ：", fill="#094478", font=("Jomolhari Regular",9))
-        entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
-        entry.place(x=412.0 * scale_x, y=874.0 * scale_y, width=280 * scale_x, height=50 * scale_y)
-        ToolTip(entry, msg="Enter Name of Professor with a Preference \nExample: Dr. Beats", delay=0.5)
+        canvas.create_text(278.0 * scale_x, 883.0 * scale_y, anchor="nw",
+                           text="Name     ：", fill="#094478",
+                           font=("Jomolhari Regular", 9))
+        # Populate the dropdown with professor names from the DB and store it as an instance variable
+        db = DatabaseManager()
+        db.start_session()
+        professors = db.get_faculty()
+        db.end_session()
+        professor_names = [fac.Name for fac in professors] if professors else ["No Professors Found"]
+
+        self.dropdown_prof = ttk.Combobox(self, values=professor_names, state="readonly",
+                                     font=("Arial", int(16 * scale_y)))
+        self.dropdown_prof.set(professor_names[0])
+        self.dropdown_prof.place(x=412.0 * scale_x, y=874.0 * scale_y,
+                            width=280 * scale_x, height=50 * scale_y)
+        ToolTip(self.dropdown_prof, msg="Select Name of Professor with a Preference", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 707.0* scale_x,883.0 * scale_y, anchor="nw", text="Preference Type：", fill="#094478", font=("Jomolhari Regular",9))
-        preference_options = ["Room", "Day", "Time"]
-        dropdown_preference = ttk.Combobox(self, values=preference_options, state="readonly", font=("Arial", int(16 * scale_y)))
-        dropdown_preference.set("Select Type")
-        dropdown_preference.place(x=883.0 * scale_x, y=874.0 * scale_y, width=280 * scale_x, height=50 * scale_y)
+        self.dropdown_preference = ttk.Combobox(self, values=["Room", "Day", "Time"], state="readonly", font=("Arial", int(16 * scale_y)))
+        self.dropdown_preference.set("Select Type")
+        self.dropdown_preference.place(x=883.0 * scale_x, y=874.0 * scale_y, width=280 * scale_x, height=50 * scale_y)
+        ToolTip(self.dropdown_preference, msg="Select Preference Type", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
-        canvas.create_text( 273.0* scale_x,969.0 * scale_y, anchor="nw", text="Preference ：", fill="#094478", font=("Jomolhari Regular",9))
-        entry3 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
-        entry3.place(x=412.0 * scale_x, y=955.0 * scale_y, width=751 * scale_x, height=50 * scale_y)
-        ToolTip(entry3, msg="Enter Preference \nDay Example: M/W/T/R/F \nTime Example: Evening \nRoom Example: OKT 125", delay=0.5)
-        #----------------------------------------------------------------------------------------------------------------
+        canvas.create_text(273.0 * scale_x, 969.0 * scale_y, anchor="nw", 
+                           text="Preference ：", fill="#094478", font=("Jomolhari Regular", 9))
+
+        # Store the scale factors for later use
+        self.scale_x = scale_x
+        self.scale_y = scale_y
+
+        # Create the dropdown for time preferences (Morning, Afternoon, Evening)
+        self.pref_value_dropdown = ttk.Combobox(self, state="readonly", font=("Arial", int(16 * scale_y)))
+        # Do not place the dropdown now; it will be shown when needed
+        self.pref_value_dropdown.place_forget()
+
+        # Bind the selection event to toggle the preference value widget:
+        self.dropdown_preference.bind("<<ComboboxSelected>>", self.on_pref_type_change)
+
         self.tree_Perferences.bind("<Button-3>", self.show_context_menu)
 
 
@@ -291,6 +314,7 @@ class ViewPagePreference(tk.Frame):
         try:
             db = DatabaseManager()
             db.start_session()
+            print(f"Deleting preference: {faculty_name}, {pref_type}, {pref_value}")
             db.delete_preference_by_values(faculty_name, pref_type, pref_value)
             db.end_session()
             self.update_treeview()
@@ -299,6 +323,7 @@ class ViewPagePreference(tk.Frame):
     
     def tkraise(self, *args, **kwargs):
         super().tkraise(*args, **kwargs)
+        self.update_professor_dropdown()
         self.update_treeview()
 
     def sort_treeview(self, col, reverse):
@@ -313,6 +338,64 @@ class ViewPagePreference(tk.Frame):
             self.tree_Perferences.move(k, '', index)
         # Reverse sort next time
         self.tree_Perferences.heading(col, command=lambda: self.sort_treeview(col, not reverse))
+
+    def update_professor_dropdown(self):
+        db = DatabaseManager()
+        db.start_session()
+        professors = db.get_faculty()
+        db.end_session()
+        professor_names = [fac.Name for fac in professors] if professors else ["No Professors Found"]
+        self.dropdown_prof['values'] = professor_names
+        # Optionally, reset the displayed value:
+        self.dropdown_prof.set(professor_names[0])
+
+    def on_pref_type_change(self, event):
+        pref_type = self.dropdown_preference.get()
+        # First, hide the dropdown widget (if visible)
+        self.pref_value_dropdown.place_forget()
+        if pref_type == "Time":
+            time_options = ["Morning", "Afternoon", "Evening"]
+            self.pref_value_dropdown['values'] = time_options
+            self.pref_value_dropdown.current(0)
+            self.pref_value_dropdown.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
+                                            width=751 * self.scale_x, height=50 * self.scale_y)
+            ToolTip(self.pref_value_dropdown, msg="Select Time Preference", delay=0.5)
+        elif pref_type == "Day":
+            try:
+                from lib.DatabaseManager import TimeSlot
+                db = DatabaseManager()
+                db.start_session()
+                days_result = db.session.query(TimeSlot.Days).distinct().all()
+                days = sorted([d[0] for d in days_result])
+                db.end_session()
+            except Exception as e:
+                print(f"[ERROR] Could not retrieve days: {e}")
+                days = sorted(["MW", "TR", "MWF"])  # fallback options
+            self.pref_value_dropdown['values'] = days
+            if days:
+                self.pref_value_dropdown.current(0)
+            self.pref_value_dropdown.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
+                                           width=751 * self.scale_x, height=50 * self.scale_y)
+            ToolTip(self.pref_value_dropdown, msg="Select Day Preference", delay=0.5)
+        elif pref_type == "Room":
+            try:
+                db = DatabaseManager()
+                db.start_session()
+                rooms_result = db.get_classrooms()  # Assuming this returns a list of classroom objects
+                rooms = sorted([r.RoomID for r in rooms_result])
+                db.end_session()
+            except Exception as e:
+                print(f"[ERROR] Could not retrieve rooms: {e}")
+                rooms = sorted(["DEFAULT"])  # fallback option
+            self.pref_value_dropdown['values'] = rooms
+            if rooms:
+                self.pref_value_dropdown.current(0)
+            self.pref_value_dropdown.place(x=412.0 * self.scale_x, y=955.0 * self.scale_y, 
+                                            width=751 * self.scale_x, height=50 * self.scale_y)
+            ToolTip(self.pref_value_dropdown, msg="Select Room Preference", delay=0.5)
+        else:
+            # If no valid preference type is selected, do not show any widget.
+            pass
 
 
 

@@ -18,6 +18,7 @@ echo Upgrading pip...
 echo ----------------------------------------------
 python -m pip install --upgrade pip
 
+
 @REM echo Pre-Checking packages...
 @REM pip freeze
 
@@ -63,6 +64,15 @@ if exist "build" (
     rmdir /s /q build
 )
 
+
+REM Delete previous .spec file if it exists
+if exist "course.spec" (
+    echo ------------------------------------------------
+    echo Deleting existing .spec file...
+    echo ------------------------------------------------
+    del course.spec
+)
+
 echo ------------------------------------------------
 echo Building with PyInstaller...
 echo ------------------------------------------------
@@ -73,6 +83,8 @@ python -m PyInstaller --onefile ^
   --add-data "./lib;lib" ^
   --workpath "./build/temp" ^
   --distpath "./build" ^
+  --icon "./icon.ico" ^
+  --name "COURSE" ^
   --noconsole ^
   course.py
 

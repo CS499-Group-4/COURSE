@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-from lib.CSV_Exporter import export_schedule_to_csv_and_pdf
+from lib.CSV_Exporter import export_schedule_to_csv_and_pdf,export_schedule_to_html
 from lib.DatabaseManager import DatabaseManager, Schedule, Course, TimeSlot, Faculty, Classroom
 from tktooltip import ToolTip
 
@@ -152,7 +152,7 @@ class ExportPage(tk.Frame):
         global tree
         tree = ttk.Treeview(self, columns=self.columns, show="headings")
         for col in self.columns:
-            tree.heading(col, text=col)
+            tree.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
             tree.column(col, width=30, anchor="center")
         # Initially empty; it will be populated when the page is shown
         self.courses = []  
@@ -208,6 +208,8 @@ class ExportPage(tk.Frame):
         for course_id, days, start_time, end_time, faculty_name, room_id in results:
             time_str = f"{start_time}-{end_time}"
             self.tree.insert("", "end", values=(course_id, days, time_str, faculty_name, room_id))
+        
+        self.sort_treeview("Course ID", False)
 
     def tkraise(self, *args, **kwargs):
         # When the page is shown, populate the schedule.
@@ -229,6 +231,7 @@ class ExportPage(tk.Frame):
             # Call the export function with filters
             try:
                 export_schedule_to_csv_and_pdf(output_file, filter_type=filter_type, filter_value=filter_value)
+                export_schedule_to_html(output_file.replace('.csv', '.html'), filter_type=filter_type, filter_value=filter_value)
                 print(f"[INFO] Schedule successfully exported to {output_file}")
             except Exception as e:
                 print(f"[ERROR] Failed to export schedule: {e}")
@@ -259,3 +262,17 @@ class ExportPage(tk.Frame):
         for option in options:
             menu.add_command(label=option, command=lambda value=option: self.dropdown2_var.set(value))
         self.dropdown2_var.set(options[0])  # Set the first option as the default
+
+    def sort_treeview(self, col, reverse):
+        # Get the data to sort: a list of tuples (value, item)
+        l = [(self.tree.set(k, col), k) for k in self.tree.get_children('')]
+        try:
+            l.sort(key=lambda t: float(t[0]) if t[0].replace('.', '', 1).isdigit() else t[0],
+                   reverse=reverse)
+        except Exception:
+            l.sort(reverse=reverse)
+        # Rearrange items in sorted positions
+        for index, (val, k) in enumerate(l):
+            self.tree.move(k, '', index)
+        # Reset the heading so that clicking it reverses the sort
+        self.tree.heading(col, command=lambda: self.sort_treeview(col, not reverse))

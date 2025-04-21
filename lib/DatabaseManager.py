@@ -232,11 +232,7 @@ class DatabaseManager:
         faculty = self.session.query(Faculty).filter_by(
             Name=name,
             Priority=priority,
-            Class1=class1,
-            Class2=class2,
-            Class3=class3,
-            Class4=class4,
-            Class5=class5
+            Class1=class1
         ).first()
         if faculty:
             self.session.delete(faculty)

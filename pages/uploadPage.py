@@ -300,6 +300,9 @@ class UploadPage(tk.Frame):
                     del self.file_state[filepath]
                     self.save_state()
                 continue
+            # If the file is already parsed, skip it
+            if filepath in self.file_state and self.file_state[filepath].get("status") == "parsed":
+                continue
             try:
                 # Attempt to parse the file
                 parse_csv(filepath)
@@ -327,5 +330,5 @@ class UploadPage(tk.Frame):
             print("Database not yet initialized; skipping view page refresh.")
 
 
-   
+
 

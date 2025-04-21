@@ -172,13 +172,28 @@ class ViewPageCourse(tk.Frame):
         # )
         # self.course_id_entry.place(x=274.0 * scale_x, y=937.0 * scale_y, width=850.0 * scale_x, height=80.0 * scale_y)
         def add_course():
-            course_id = entry.get().strip()
-            # Standardize course_id: Ensure the department part is uppercase and there's a space before the number
-            match = re.match(r'([A-Za-z]+)\s*(\d+)', course_id)
-            if match:
-                dept = match.group(1).upper()
-                number = match.group(2)
-                course_id = f"{dept} {number}"
+            raw_course_id = entry.get().strip()  # e.g. "CS 155-1" or "CS 155-01"
+            # Validate that a dash is present
+            if "-" not in raw_course_id:
+                mbox.showerror("Invalid Course ID", "Please include the section number (e.g. CS 155-01).")
+                return
+
+            import re
+            # Expect format: letters+numbers, a dash, then section digits
+            print(f"Raw course ID: {raw_course_id}")
+            match = re.match(r'([A-Za-z]+\s*\d+)-(\d+)$', raw_course_id)
+            print(f"Regex match: {match}")
+
+            if not match:
+                mbox.showerror("Invalid Course ID", "Course ID must be entered in the format 'CS 155-01'.")
+                return
+            base_id = match.group(1).strip()  # e.g. "CS 155"
+            section = match.group(2)
+            # Auto cast a one-digit section to two digits.
+            if len(section) == 1:
+                section = section.zfill(2)
+            course_id = f"{base_id}-{section}"
+            
             # Retrieve remaining values
             department = entry2.get().strip()
             max_enrollment = entry3.get().strip()
@@ -187,17 +202,26 @@ class ViewPageCourse(tk.Frame):
             required_room3 = entry6.get().strip()
             required_room4 = entry7.get().strip()
             
-            # Standardize required room inputs to uppercase
+            # Standardize room inputs to uppercase
             if required_room1:
                 required_room1 = required_room1.upper()
+            else:
+                required_room1 = None
             if required_room2:
                 required_room2 = required_room2.upper()
+            else:
+                required_room2 = None
             if required_room3:
                 required_room3 = required_room3.upper()
+            else:
+                required_room3 = None
             if required_room4:
                 required_room4 = required_room4.upper()
+            else:
+                required_room4 = None
             
-            # -- Error checking for required fields -- 
+
+            # -- Error checking for required fields --
             if not course_id or not department or not max_enrollment:
                 mbox.showerror("Missing Required Field", "Please fill in Course ID, Department, and Max/Estimated Enrollment.")
                 return
@@ -211,36 +235,17 @@ class ViewPageCourse(tk.Frame):
                 mbox.showerror("Invalid Enrollment", "Max/Estimated Enrollment must be a valid integer.")
                 return
 
-            # Create a DatabaseManager session for checking room existence
+            # Create a DatabaseManager session for checking course existence
             db = DatabaseManager()
             db.start_session()
             
-            # -- Check warnings for room IDs (if provided) --
-            def check_room(room_str):
-                if room_str:
-                    existing_room = db.session.query(Classroom).filter_by(RoomID=room_str).first()
-                    if not existing_room:
-                        mbox.showwarning("Room Not Found", f"Room '{room_str}' does not exist in the database. It will not be assigned to the course unless added on the Rooms tab.")
-                    return room_str
-                return None
-
+            existing_course = db.session.query(Course).filter_by(CourseID=course_id).first()
+            if existing_course:
+                mbox.showerror("Course Exists", f"Course '{course_id}' already exists in the database.")
+                db.end_session()
+                return
             
-
-            required_room1 = check_room(required_room1)
-            required_room2 = check_room(required_room2)
-            required_room3 = check_room(required_room3)
-            required_room4 = check_room(required_room4)
-            
-            # Check if the course already exists in the database
-
-
             try:
-                existing_course = db.session.query(Course).filter_by(CourseID=course_id).first()
-                if existing_course:
-                    mbox.showerror("Course Exists", f"Course '{course_id}' already exists in the database.")
-                    db.end_session()
-                    return
-                # Add the course to the database
                 db.add_course(
                     course_id=course_id,
                     department=department,
@@ -251,7 +256,6 @@ class ViewPageCourse(tk.Frame):
                     req_room4=required_room4
                 )
                 db.end_session()
-                # Refresh the Course treeview after DB insertion
                 self.update_treeview()
                 # Clear the entry fields
                 entry.delete(0, "end")
