@@ -505,12 +505,9 @@ class StartPage(tk.Frame):
 
     def runScheduler(self):
         def scheduler_worker():
-            #self.scheduleProgress['value'] = 10
-            # If the schedule is empty, generate with progress updates.
+            # If schedule is empty, generate it; otherwise, show popup info.
             if scheduler.is_schedule_empty():
-                # Pass the update callback function to update progress:
                 scheduler.generate_schedule(update_callback=lambda prog: self.scheduleProgress.configure(value=prog))
-                #self.scheduleProgress['value'] = 70
                 conflicts = scheduler.validate_faculty_preferences()
                 if conflicts:
                     print("Conflicts found:")
@@ -519,14 +516,12 @@ class StartPage(tk.Frame):
                 else:
                     print("No faculty preference conflicts found.")
             else:
-                self.updateProgress(100)
                 print("Schedule already exists.")
-                #self.scheduleProgress['value'] = 80
-            # Finally, update the tree views and finish progress:
+                self.scheduleProgress['value'] = 100
+                messagebox.showinfo("Info", "A schedule already exists. Please delete the existing schedule if you want to generate a new one.")
+            
             update_treeview()
             update_conflict_treeview()
-            #self.scheduleProgress['value'] = 100
 
-        # Run the scheduler in a background thread
         threading.Thread(target=scheduler_worker, daemon=True).start()
 
