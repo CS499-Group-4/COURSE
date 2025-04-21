@@ -114,9 +114,9 @@ class StartPage(tk.Frame):
         # button_7.place(x=1224.0 * self.scale_x, y=36.0 * self.scale_y, width=200.0 * self.scale_x, height=112.0 * self.scale_y)
         
        # Status and conflict summary text
-        self.canvas.create_text(2000.0 * self.scale_x, 270.0 * self.scale_y, anchor="nw",
+        self.canvas.create_text(2090.0 * self.scale_x, 270.0 * self.scale_y, anchor="nw",
                            text="Status:", fill="#094478",
-                           font=("Jomolhari Regular", int(20 * self.scale_y)))
+                           font=("Jomolhari Regular", int(20 * -1)))
         self.canvas.create_rectangle(935.0, 339.0, 1435.0, 818.0, fill="#FFFFFF", outline="")
         self.canvas.create_text(1064.0, 339.0, anchor="nw",
                            text="Conflict  Summary：", fill="#094478",
@@ -137,8 +137,22 @@ class StartPage(tk.Frame):
 
         #Scheduler Progress Bar
         #1800.0 * self.scale_x, 350.0 * self.scale_y
-        self.scheduleProgress =  ttk.Progressbar(self.canvas, value = 100, style='info.Striped.Horizontal.TProgressbar')
-        self.scheduleProgress.place(x=1000.0 * self.scale_x, y=200.0 * self.scale_y, width = 200, height = 50)
+        style = ttk.Style(self.canvas)
+        style.theme_use('default')
+        style.configure("CustomBlue.Horizontal.TProgressbar",
+                        troughcolor='white',
+                        background='#0a4578',
+                        thickness=30)
+
+        self.scheduleProgress = ttk.Progressbar(self.canvas,
+                                                style="CustomBlue.Horizontal.TProgressbar",
+                                                orient="horizontal",
+                                                length=200,
+                                                mode="determinate")  # Or "indeterminate"
+        self.scheduleProgress['value'] = 100  # Only visible in "determinate" mode
+        self.scheduleProgress.place(x=1000.0 * self.scale_x,
+                                    y=210.0 * self.scale_y)
+        self.scheduleProgress.step(0)
         
         # # Lower right button
         # button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), self.scale_x, self.scale_y)
@@ -241,6 +255,7 @@ class StartPage(tk.Frame):
 
     def runScheduler(self):
         print("Running scheduler...")
+        self.scheduleProgress.step(30)
         if scheduler.is_schedule_empty():
             scheduler.generate_schedule()
             print("Scheduler complete, validating faculty preferences...")
@@ -253,10 +268,13 @@ class StartPage(tk.Frame):
                 print("No faculty preference conflicts found.")
         else:
             print("Schedule already exists.")
+        self.scheduleProgress.step(60)
         print("Updating treeview...")
         self.update_treeview()
+        self.scheduleProgress.step(90)
         print("Treeview updated.")
         print("Updating conflict treeview...")
+        self.scheduleProgress.step(100)
         self.update_conflict_treeview()
         print("Conflict treeview updated.")
 
