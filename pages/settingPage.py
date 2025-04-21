@@ -45,7 +45,7 @@ class SettingPage(tk.Frame):
                         bd=0, highlightthickness=0, relief="ridge")
         canvas.place(x=0, y=0)
         
-        canvas.create_rectangle(0.0, 1.0, 235.0, 1042.0, fill="#79BCF7", outline="")
+        canvas.create_rectangle(0.0, 0.0, 235.0, 1042.0, fill="#79BCF7", outline="")
         
         canvas.create_rectangle(296.0, 41.0, 1403.0, 148.0, fill="#DAEBF9", outline="")
         
@@ -207,10 +207,5 @@ class SettingPage(tk.Frame):
         # 对所有 Canvas 项目进行统一缩放
         canvas.scale("all", 0, 0, scale_x, scale_y)
 
-        # work in progress cover
-        overlay = Canvas(self, bg="#3198f3", height=orig_height, width=orig_width, bd=0, highlightthickness=0, relief="ridge")
-        overlay.place(x=125.0, y=0)
-        overlay.create_text(350, 100, text = "THIS PAGE IS A", fill = "white", font=("Helvetica", 32, "bold"))
-        overlay.create_text(350, 150, text = "WORK IN PROGRESS", fill = "white", font=("Helvetica", 32, "bold"))
-        overlay.create_text(350, 200, text = "NEW FEATURES COMING SOON", fill = "white", font=("Helvetica", 32, "bold"))
+        
         
