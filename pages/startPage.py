@@ -8,7 +8,6 @@ import tkinter.ttk as ttk
 from tkinter import messagebox  # Import the messagebox module
 from tktooltip import ToolTip
 from lib.DatabaseManager import Schedule, Faculty, Course, Classroom, TimeSlot
-
 #import the generate_scheduler() function from lib/scheduler.py
 from lib.Scheduler import CourseScheduler
 
@@ -61,6 +60,35 @@ class StartPage(tk.Frame):
     def make_GUI(self):
     # Navigation button: switch page
         controller = self.controller
+        
+        # Style Settings
+        style = ttk.Style(self.canvas)
+        style.theme_use('default')
+        style.configure("Treeview",
+                background="white",       # Row background
+                foreground="black",         # Text color
+                rowheight=25,
+                fieldbackground="white",  # Area around the cells
+                font=('Helvetica', 12))
+        # Treeview header appearance
+        style.configure("Treeview.Heading",
+                background="white",
+                foreground="black",   # Or white if you set a darker bg
+                font=('Helvetica', 12, 'bold'))
+        style.configure("CustomBlue.Vertical.TScrollbar",
+                gripcount=0,
+                background="#0a4578",   # Thumb (scroll handle)
+                troughcolor="white",    # Background of the scrollbar
+                bordercolor="white",
+                lightcolor="white",
+                darkcolor="white",
+                arrowsize=0,            # Hide arrows
+                width=8) 
+        style.configure("CustomBlue.Horizontal.TProgressbar",
+                        troughcolor='white',
+                        background='#0a4578',
+                        thickness=30)
+
        # ----------------------------HomePage------------------------------------------
         btn5_img = scaled_photoimage(str(relative_to_assets("button_5.png")), self.scale_x, self.scale_y)
         btn5 = Button(self, image=btn5_img, borderwidth=0, highlightthickness=0,
@@ -130,27 +158,19 @@ class StartPage(tk.Frame):
         for col in conflict_columns:
             self.conflict_tree.heading(col, text=col)
             self.conflict_tree.column(col, width=80, anchor="center")
-        self.canvas.create_window(950.0, 380.0, anchor="nw", width=450.0, height=350.0, window=self.conflict_tree)
-        conflict_scroll = ttk.Scrollbar(self, orient="vertical", command=self.conflict_tree.yview)
+        self.canvas.create_window(950.0, 400.0, anchor="nw", width=450.0, height=350.0, window=self.conflict_tree)
+        conflict_scroll = ttk.Scrollbar(self, style = "CustomBlue.Vertical.TScrollbar", orient="vertical", command=self.conflict_tree.yview)
         self.conflict_tree.configure(yscrollcommand=conflict_scroll.set)
-        conflict_scroll.place(x=1400.0 * self.scale_x, y=365.0 * self.scale_y, height=400.0 * self.scale_y)        
+        conflict_scroll.place(x=1400.0 * self.scale_x, y=400.0 * self.scale_y, height=350.0 * self.scale_y)        
 
         #Scheduler Progress Bar
-        #1800.0 * self.scale_x, 350.0 * self.scale_y
-        style = ttk.Style(self.canvas)
-        style.theme_use('default')
-        style.configure("CustomBlue.Horizontal.TProgressbar",
-                        troughcolor='white',
-                        background='#0a4578',
-                        thickness=30)
-
         self.scheduleProgress = ttk.Progressbar(self.canvas,
                                                 style="CustomBlue.Horizontal.TProgressbar",
                                                 orient="horizontal",
                                                 length=200,
                                                 mode="determinate")  # Or "indeterminate"
         self.scheduleProgress['value'] = 0  # Only visible in "determinate" mode
-        self.scheduleProgress.place(x=1000.0 * self.scale_x,
+        self.scheduleProgress.place(x=1020.0 * self.scale_x,
                                     y=210.0 * self.scale_y)
         #self.scheduleProgress.step(0)
         
@@ -207,10 +227,10 @@ class StartPage(tk.Frame):
         ]
         for course in courses:
             self.tree.insert("", "end", values=course)
-        tree_scroll = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        tree_scroll = ttk.Scrollbar(self, style = "CustomBlue.Vertical.TScrollbar", orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=tree_scroll.set)
         self.canvas.create_window(240, 9, width=671, height=1026, anchor="nw", window=self.tree)
-        tree_scroll.place(x=500, y=6, height=1025)
+        tree_scroll.place(x=500, y=6, height=600)
         
         self.make_treeview_editable()
 
