@@ -273,7 +273,7 @@ class ViewPageCourse(tk.Frame):
         btn13 = Button(self, image=btn13_img, borderwidth=0, highlightthickness=0, command=add_course)
         btn13.image = btn13_img
         btn13.place(x=1192.0 * scale_x, y=935.0 * scale_y, width=200.0 * scale_x, height=80.0 * scale_y)
-        ToolTip(btn13, msg="Add new data to system", delay=0.5)
+        ToolTip(btn13, msg="Add New Entry", delay=0.5)
         
 
 #——————————————————————————————————————————————————
@@ -285,7 +285,7 @@ class ViewPageCourse(tk.Frame):
         canvas.create_text(  268.0* scale_x,  869.0 * scale_y, anchor="nw", text="Course ID:", fill="#094478", font=("Jomolhari Regular",9))
         entry = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
         entry.place(x=375.0 * scale_x, y=860.0 * scale_y, width=(575.0 - 375.0) * scale_x, height=(910.0 - 860.0) * scale_y)
-        ToolTip(entry, msg="Enter Course ID \nExample: CS 100", delay=0.5)
+        ToolTip(entry, msg="Enter Course ID \nExample: CS 100-01", delay=0.5)
         #----------------------------------------------------------------------------------------------------------------
         canvas.create_text( 604.0* scale_x,869.0 * scale_y, anchor="nw", text="Department", fill="#094478", font=("Jomolhari Regular",9))
         entry2 = Entry(self, bd=0, bg="#FFFFFF", fg="#000000", highlightthickness=0, font=("Arial", int(16 * scale_y)))
