@@ -59,8 +59,8 @@ Finalized: 4/27/2025
     > Right-click on data rows to **Delete** entries  
 5. Select **Generate Schedule** from the sidebar and press **Start** to generate the schedule  
 6. Double-Clock on values to make changes to the schedule to make desired changes and/or resolve conflicts.
-- Select **Update** to commit changes to the schedule. Erorrs or warnings will show here if some changes cannot be made.
-- In case you'd like to revert changes that were unable to be committed, you can select **Start** again to revert uncommitted changes.
+    > Select **Update** to commit changes to the schedule. Erorrs or warnings will show here if some changes cannot be made.
+    > In case you'd like to revert changes that were unable to be committed, you can select **Start** again to revert uncommitted changes.
 7. Review schedule conflicts under **Conflict Summary**  
 8. Navigate to **Export Schedule**, choose a filter (optional)  
 9. Click **Export** to download the schedule as both `.csv` and `.pdf`  
@@ -70,8 +70,8 @@ Finalized: 4/27/2025
 When you've finished generating your schedule or would like to undo your progress thus far to restart you must:
 1. Close the application
 2. In the application's directory remove the following:
-- course.db file
-- uploads folder
+    > course.db file
+    > uploads folder
 3. Relaunch the app and it's ready to go again!
 
 ---
