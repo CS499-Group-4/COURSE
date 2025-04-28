@@ -63,7 +63,7 @@ Finalized: 4/27/2025
     > In case you'd like to revert changes that were unable to be committed, you can select **Start** again to revert uncommitted changes.
 7. Review schedule conflicts under **Conflict Summary**  
 8. Navigate to **Export Schedule**, choose a filter (optional)  
-9. Click **Export** to download the schedule as both `.csv` and `.pdf`  
+9. Click **Export** to download the schedule. Choose the location and name 3 files will be created: `.csv`, `.html`, `.pdf` 
     > Tooltips are available by hovering over buttons and fields for additional help
 
 ### Resetting to generate a new schedule
