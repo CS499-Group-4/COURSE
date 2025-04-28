@@ -207,9 +207,10 @@ class SettingPage(tk.Frame):
         button_16 = Button(self, image=button_image_16, borderwidth=0, highlightthickness=0,
                            command=lambda: self.update_Settings('Jomolhari Regular', 12), relief="flat")
         button_16.image = button_image_16
-        button_16.place(x=377.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
+        button_16.place(x=979.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
+            #x=377.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
         ToolTip(button_16, msg="Restore Default Settings", delay=0.5)
-        
+        '''
         # Save Settings Button
         button_image_17 = scaled_photoimage(str(relative_to_assets("button_17.png")), scale_x, scale_y)
         button_17 = Button(self, image=button_image_17, borderwidth=0, highlightthickness=0,
@@ -217,6 +218,7 @@ class SettingPage(tk.Frame):
         button_17.image = button_image_17
         button_17.place(x=979.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
         #ToolTip(button_17, msg="Save Preferences", delay=0.5)
+        '''
         
         #logo iamge
         img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
