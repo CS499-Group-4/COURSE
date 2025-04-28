@@ -122,9 +122,9 @@ This project is organized using modular page-based Tkinter views. Each of these 
   
    <img src="https://github.com/user-attachments/assets/7e25b19b-6632-4e74-bf89-ab6c84865805" alt="course_logo" height="400">
 
-- `settingPage.py` ** – Under construction. **
+- `settingPage.py` – Allows the user to customize font and font size to their preference.
   
-   <img src="https://github.com/user-attachments/assets/898cfe89-bbce-43b1-98b9-abaa181d9b84" alt="course_logo" height="400">
+   <img src="https://github.com/user-attachments/assets/56d72729-ed38-45d6-b9b7-91ed030b68f9" alt="course_logo" height="400">
 
 
 
