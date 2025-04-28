@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageTk
 import os
 import tkinter.ttk as ttk
-#from tktooltip import ToolTip
+from tktooltip import ToolTip
 
 # ---------------------------
 # Common helper functions and resource paths
@@ -37,6 +37,8 @@ class SettingPage(tk.Frame):
         def relative_to_assets(path: str) -> Path:
             return ASSETS_PATH / Path(path)
         
+        self.fontSelect = "Jomolhari Regular"
+        self.fontSize = 12;
         orig_width, orig_height = 1455, 1041
         new_width, new_height = 800, 600
         scale_x, scale_y = new_width / orig_width, new_height / orig_height
@@ -52,21 +54,21 @@ class SettingPage(tk.Frame):
         canvas.create_text(323.0, 76.0, anchor="nw", text="Font Setting:",
                            fill="#094478", font=("Jomolhari Regular", 10))
         
-        canvas.create_rectangle(289.0, 502.0, 1396.0, 609.0, fill="#DAEBF9", outline="")
-        canvas.create_rectangle(289.0, 697.0, 1403.0, 804.0, fill="#DAEBF9", outline="")
+        #canvas.create_rectangle(289.0, 502.0, 1396.0, 609.0, fill="#DAEBF9", outline="")
+        #canvas.create_rectangle(289.0, 697.0, 1403.0, 804.0, fill="#DAEBF9", outline="")
         
         canvas.create_rectangle(296.0, 239.0, 1403.0, 346.0, fill="#DAEBF9", outline="")
         canvas.create_text(323.0, 274.0, anchor="nw", text="Font Size:",
                            fill="#094478", font=("Jomolhari Regular", 10))
         
-        canvas.create_text(296.0, 430.0, anchor="nw", text="Default display mode of class schedule: ",
-                           fill="#094478", font=("Jomolhari Regular", 16))
+        #canvas.create_text(296.0, 430.0, anchor="nw", text="Default display mode of class schedule: ",
+        #                  fill="#094478", font=("Jomolhari Regular", 16))
         
-        canvas.create_rectangle(502.0, 293.00000002561853, 1350.0000066752837, 298.0,
-                                fill="#094478", outline="")
+        #canvas.create_rectangle(502.0, 293.00000002561853, 1350.0000066752837, 298.0,
+        #                       fill="#094478", outline="")
         
-        canvas.create_text(330.0, 735.0, anchor="nw", text="Font Setting:",
-                           fill="#094478", font=("Jomolhari Regular", 24))
+        #canvas.create_text(330.0, 735.0, anchor="nw", text="Font Setting:",
+        #                  fill="#094478", font=("Jomolhari Regular", 24))
         
         image_1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
         canvas.create_image(215.0 * scale_x, 1700.0 * scale_y, image=image_1)
@@ -113,31 +115,48 @@ class SettingPage(tk.Frame):
         # Ariel Button
         button_image_7 = scaled_photoimage(str(relative_to_assets("button_7.png")), scale_x, scale_y)
         button_7 = Button(self, image=button_image_7, borderwidth=0, highlightthickness=0,
-                          command=lambda: print("button_7 clicked"), relief="flat")
+                          command=lambda: self.update_Settings('Arial', self.fontSize), relief="flat")
         button_7.image = button_image_7
         button_7.place(x=503.0 * scale_x, y=64.0 * scale_y, width=169.0 * scale_x, height=66.0 * scale_y)
         
         # Times New Roman Button
         button_image_8 = scaled_photoimage(str(relative_to_assets("button_8.png")), scale_x, scale_y)
         button_8 = Button(self, image=button_image_8, borderwidth=0, highlightthickness=0,
-                          command=lambda: print("button_8 clicked"), relief="flat")
+                          command=lambda: self.update_Settings('Times New Roman', self.fontSize), relief="flat")
         button_8.image = button_image_8
         button_8.place(x=959.0 * scale_x, y=64.0 * scale_y, width=169.0 * scale_x, height=66.0 * scale_y)
         
         # Comic Sans Button
         button_image_9 = scaled_photoimage(str(relative_to_assets("button_9.png")), scale_x, scale_y)
         button_9 = Button(self, image=button_image_9, borderwidth=0, highlightthickness=0,
-                          command=lambda: print("button_9 clicked"), relief="flat")
+                          command=lambda: self.update_Settings('Comic Sans MS', self.fontSize), relief="flat")
         button_9.image = button_image_9
         button_9.place(x=1181.0 * scale_x, y=64.0 * scale_y, width=169.0 * scale_x, height=66.0 * scale_y)
         
         # Courier New Button
         button_image_10 = scaled_photoimage(str(relative_to_assets("button_10.png")), scale_x, scale_y)
         button_10 = Button(self, image=button_image_10, borderwidth=0, highlightthickness=0,
-                           command=lambda: print("button_10 clicked"), relief="flat")
+                           command=lambda: self.update_Settings('Courier New', self.fontSize), relief="flat")
         button_10.image = button_image_10
         button_10.place(x=727.0 * scale_x, y=64.0 * scale_y, width=169.0 * scale_x, height=66.0 * scale_y)
         
+        # Font Slider
+        # Create the slider
+        self.fontScale = tk.Scale(canvas,
+                  from_=6,
+                  to=20,
+                  orient="horizontal",
+                  showvalue=1,           
+                  highlightthickness=0, 
+                  sliderrelief="flat",         
+                  width=6,                    
+                  length=470,                    
+                  command = lambda val: self.update_Settings(self.fontSelect, size=val)
+                )
+        self.fontScale.set(12)    
+        self.fontScale.place(x = 275.0,y= 150.0)
+
+        '''
         # Lower button area
         canvas.create_rectangle(289.0, 502.0, 1396.0, 609.0, fill="#DAEBF9", outline="")
         canvas.create_rectangle(289.0, 697.0, 1403.0, 804.0, fill="#DAEBF9", outline="")
@@ -182,15 +201,16 @@ class SettingPage(tk.Frame):
                            command=lambda: print("button_15 clicked"), relief="flat")
         button_15.image = button_image_15
         button_15.place(x=979.0 * scale_x, y=718.0 * scale_y, width=298.0 * scale_x, height=66.0 * scale_y)
-        
+        '''
         # Restore Default Button
         button_image_16 = scaled_photoimage(str(relative_to_assets("button_16.png")), scale_x, scale_y)
         button_16 = Button(self, image=button_image_16, borderwidth=0, highlightthickness=0,
-                           command=lambda: print("button_16 clicked"), relief="flat")
+                           command=lambda: self.update_Settings('Jomolhari Regular', 12), relief="flat")
         button_16.image = button_image_16
-        button_16.place(x=377.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
-        #ToolTip(button_16, msg="Restore to Default Settings", delay=0.5)
-        
+        button_16.place(x=979.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
+            #x=377.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
+        ToolTip(button_16, msg="Restore Default Settings", delay=0.5)
+        '''
         # Save Settings Button
         button_image_17 = scaled_photoimage(str(relative_to_assets("button_17.png")), scale_x, scale_y)
         button_17 = Button(self, image=button_image_17, borderwidth=0, highlightthickness=0,
@@ -198,6 +218,7 @@ class SettingPage(tk.Frame):
         button_17.image = button_image_17
         button_17.place(x=979.0 * scale_x, y=888.0 * scale_y, width=348.0 * scale_x, height=94.0 * scale_y)
         #ToolTip(button_17, msg="Save Preferences", delay=0.5)
+        '''
         
         #logo iamge
         img1 = scaled_photoimage(str(relative_to_assets("image_1.png")), scale_x, scale_y)
@@ -207,5 +228,14 @@ class SettingPage(tk.Frame):
         # 对所有 Canvas 项目进行统一缩放
         canvas.scale("all", 0, 0, scale_x, scale_y)
 
-        
+    def update_Settings(self, fontTheme = 'Jomolhari Regular', size = 10):
+        self.fontSelect = fontTheme;
+        self.fontSize = size;
+        self.fontScale.set(size)
+        style = ttk.Style()
+        # adjusts treeview font theme and font size
+        style.configure("Treeview",
+                font=(fontTheme, size))
+        style.configure("Treeview.Heading",
+                font=(fontTheme, size, 'bold'))
         

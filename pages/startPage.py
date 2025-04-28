@@ -495,7 +495,7 @@ class StartPage(tk.Frame):
                                     y=210.0 * scale_y)
         canvas.create_text(1020.0 * scale_x + 100, 210.0 * scale_y - 20,
                            text="Status:", fill="#094478",
-                           font=("Jomolhari Regular", int(20 * scale_y)),
+                           font=("Jomolhari Regular", int(20 * -1)),
                            anchor="center")
     def updateProgress(self, value):
         """Update the progress bar value."""
