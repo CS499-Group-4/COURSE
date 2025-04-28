@@ -13,6 +13,7 @@
 - [📌 Project Overview](#project-overview)
 - [👥 Team Members](#team-members)
 - [⏰ Timeline](#timeline)
+- [🔨 Building The Executable](#Building-The-Executable)
 - [🧑‍💻 User Manual](#user-manual)
 - [🗂 Source Files and Folder Structure](#source-files-and-folder-structure)
   - [🖥 Pages](#pages)
@@ -42,6 +43,12 @@ Start Date: 1/12/2025  \
 Finalized: 4/27/2025
 
 ---
+# 🔨 Building The Executable
+1. Ensure you're on a windows machine with Python3 installed (this should be default with any standard windows install)
+2. In the COURSE folder, run **Build.bat**
+3. After completion, the executable can be found in the **build** folder
+
+---
 
 # 🧑‍💻 User Manual
 1. Go to the **Upload** tab to upload the `.csv` files  
@@ -51,10 +58,21 @@ Finalized: 4/27/2025
     > Click **Add** to insert entries  
     > Right-click on data rows to **Delete** entries  
 5. Select **Generate Schedule** from the sidebar and press **Start** to generate the schedule  
-6. Review schedule conflicts under **Conflict Summary**  
-7. Navigate to **Export Schedule**, choose a filter (optional)  
-8. Click **Export** to download the schedule as both `.csv` and `.pdf`  
+6. Double-Clock on values to make changes to the schedule to make desired changes and/or resolve conflicts.
+- Select **Update** to commit changes to the schedule. Erorrs or warnings will show here if some changes cannot be made.
+- In case you'd like to revert changes that were unable to be committed, you can select **Start** again to revert uncommitted changes.
+7. Review schedule conflicts under **Conflict Summary**  
+8. Navigate to **Export Schedule**, choose a filter (optional)  
+9. Click **Export** to download the schedule as both `.csv` and `.pdf`  
     > Tooltips are available by hovering over buttons and fields for additional help
+
+### Resetting to generate a new schedule
+When you've finished generating your schedule or would like to undo your progress thus far to restart you must:
+1. Close the application
+2. In the application's directory remove the following:
+- course.db file
+- uploads folder
+3. Relaunch the app and it's ready to go again!
 
 ---
 
